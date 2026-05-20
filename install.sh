@@ -890,6 +890,7 @@ echo ""
 cat > "$UCLAW_DIR/start.sh" << STARTEOF
 #!/bin/bash
 cd "$UCLAW_DIR/core"
+export PATH="$UCLAW_DIR/runtime/node-linux-x64/bin:$PATH"
 openclaw gateway run
 STARTEOF
 chmod +x "$UCLAW_DIR/start.sh"

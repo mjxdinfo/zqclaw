@@ -890,7 +890,7 @@ echo ""
 cat > "$ZQCLAW_DIR/start.sh" << STARTEOF
 #!/bin/bash
 cd "$ZQCLAW_DIR/core"
-export PATH="$ZQCLAW_DIR/runtime/node-linux-x64/bin:$PATH"
+export PATH="$ZQCLAW_DIR/runtime/node-linux-x64/bin:$ZQCLAW_DIR/core/node_modules/.bin:$PATH"
 openclaw gateway run
 STARTEOF
 chmod +x "$ZQCLAW_DIR/start.sh"

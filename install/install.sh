@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================================
 # ZqClaw 一键安装脚本 (Mac/Linux)
-# 用法: curl -fsSL https://zqclaw.org/install.sh | bash
+# 用法: curl -fsSL https://zqclaw.itmsky.com/install.sh | bash
 #       或: bash install.sh
 # ============================================================
 
@@ -72,7 +72,7 @@ elif [ "$OS" = "Linux" ]; then
     fi
 else
     echo -e "  ${RED}不支持的系统: $OS${NC}"
-    echo -e "  ${YELLOW}Windows 请使用 PowerShell: irm https://zqclaw.org/install.ps1 | iex${NC}"
+    echo -e "  ${YELLOW}Windows 请使用 PowerShell: irm https://zqclaw.itmsky.com/install.ps1 | iex${NC}"
     exit 1
 fi
 

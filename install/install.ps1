@@ -1,6 +1,6 @@
 # ============================================================
 # ZqClaw Installer (Windows PowerShell)
-# Usage: irm https://zqclaw.org/install.ps1 | iex
+# Usage: irm https://zqclaw.itmsky.com/install.ps1 | iex
 #    or: powershell -ExecutionPolicy Bypass -File install.ps1
 # ============================================================
 
@@ -170,11 +170,11 @@ if (Test-Path "$CORE_DIR\node_modules\openclaw") {
     Write-Green "  [OK] OpenClaw already installed, skip"
 } else {
     Write-Cyan "  Downloading pre-bundled package (no npm install needed)..."
-    $BUNDLE_GITHUB_URL = "https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip"
+    $BUNDLE_GITHUB_URL = "https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip"
     $BUNDLE_MIRRORS = @(
-        "https://ghfast.top/https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
-        "https://ghproxy.net/https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
-        "https://gh.idayer.com/https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
+        "https://ghfast.top/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
+        "https://ghproxy.net/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
+        "https://gh.idayer.com/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
         $BUNDLE_GITHUB_URL
     )
     $bundleZip = "$env:TEMP\openclaw-bundle.zip"
@@ -205,8 +205,8 @@ if (Test-Path "$CORE_DIR\node_modules\openclaw") {
     if (-not $downloaded) {
         Write-Host "    Trying curl fallback..." -ForegroundColor DarkGray
         $curlMirrors = @(
-            "https://ghfast.top/https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
-            "https://ghproxy.net/https://github.com/dongsheng123132/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
+            "https://ghfast.top/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
+            "https://ghproxy.net/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
             $BUNDLE_GITHUB_URL
         )
         foreach ($curlUrl in $curlMirrors) {
@@ -627,7 +627,7 @@ echo   ZqClaw Remote Help
 echo   ==========================================
 echo.
 echo   Connecting...
-powershell -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$ProgressPreference='SilentlyContinue';iwr 'https://zqclaw.org/remote.ps1' -OutFile $env:TEMP\zqclaw-remote.ps1;$s=gc $env:TEMP\zqclaw-remote.ps1 -Raw -Encoding UTF8;iex $s"
+powershell -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$ProgressPreference='SilentlyContinue';iwr 'https://zqclaw.itmsky.com/remote.ps1' -OutFile $env:TEMP\zqclaw-remote.ps1;$s=gc $env:TEMP\zqclaw-remote.ps1 -Raw -Encoding UTF8;iex $s"
 pause
 '@
 [IO.File]::WriteAllText("$UCLAW_DIR\remote-help.bat", $remoteBat, (New-Object System.Text.ASCIIEncoding))

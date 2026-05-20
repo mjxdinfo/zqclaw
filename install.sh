@@ -205,6 +205,37 @@ PKGJSON
     fi
 fi
 
+# ============================================================
+# Step 3.5: 创建全局命令链接
+# ============================================================
+echo -e "  ${BOLD}[2.5/7] 配置全局命令 ...${NC}"
+
+# 查找 openclaw 命令位置
+OPENCLAW_BIN=""
+if [ -f "$CORE_DIR/node_modules/.bin/openclaw" ]; then
+    OPENCLAW_BIN="$CORE_DIR/node_modules/.bin/openclaw"
+elif [ -f "$RUNTIME_DIR/node-linux-x64/bin/openclaw" ]; then
+    OPENCLAW_BIN="$RUNTIME_DIR/node-linux-x64/bin/openclaw"
+fi
+
+# 创建全局链接（优先 /usr/local/bin，否则用用户 bin 目录）
+if [ -n "$OPENCLAW_BIN" ]; then
+    if [ -w "/usr/local/bin" ]; then
+        ln -sf "$OPENCLAW_BIN" "/usr/local/bin/openclaw"
+        echo -e "  ${GREEN}✓${NC} 全局命令已配置: /usr/local/bin/openclaw"
+    elif [ -w "$HOME/bin" ] || mkdir -p "$HOME/bin" 2>/dev/null; then
+        ln -sf "$OPENCLAW_BIN" "$HOME/bin/openclaw"
+        export PATH="$HOME/bin:$PATH"
+        echo -e "  ${GREEN}✓${NC} 全局命令已配置: $HOME/bin/openclaw"
+        echo -e "  ${DIM}请将 $HOME/bin 添加到 PATH 环境变量${NC}"
+    else
+        echo -e "  ${YELLOW}⚠${NC} 无法创建全局链接，请手动添加到 PATH"
+        echo -e "  ${DIM}openclaw 位置: $OPENCLAW_BIN${NC}"
+    fi
+else
+    echo -e "  ${YELLOW}⚠${NC} 未找到 openclaw 命令"
+fi
+
 echo ""
 
 # ============================================================

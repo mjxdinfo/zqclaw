@@ -22,10 +22,10 @@ try {
 $ErrorActionPreference = "Stop"
 
 # ---- Constants ----
-$UCLAW_DIR = "$env:USERPROFILE\.zqclaw"
-$RUNTIME_DIR = "$UCLAW_DIR\runtime"
-$CORE_DIR = "$UCLAW_DIR\core"
-$DATA_DIR = "$UCLAW_DIR\data"
+$ZQCLAW_DIR = "$env:USERPROFILE\.zqclaw"
+$RUNTIME_DIR = "$ZQCLAW_DIR\runtime"
+$CORE_DIR = "$ZQCLAW_DIR\core"
+$DATA_DIR = "$ZQCLAW_DIR\data"
 $CONFIG_PATH = "$DATA_DIR\.openclaw\openclaw.json"
 $NODE_VERSION = "v22.16.0"
 $MIRROR = "https://registry.npmmirror.com"
@@ -59,12 +59,12 @@ if ($ARCH -eq "AMD64" -or $ARCH -eq "x86_64") {
     exit 1
 }
 
-Write-Host "  Install path: $UCLAW_DIR" -ForegroundColor Cyan
+Write-Host "  Install path: $ZQCLAW_DIR" -ForegroundColor Cyan
 Write-Host ""
 
 # Check existing install
 if (Test-Path "$CORE_DIR\node_modules\openclaw") {
-    Write-Yellow "  Found existing install: $UCLAW_DIR"
+    Write-Yellow "  Found existing install: $ZQCLAW_DIR"
     $overwrite = Read-Host "  Overwrite? (y/n) [y]"
     if ($overwrite -eq "n" -or $overwrite -eq "N") {
         Write-Host "  Cancelled." -ForegroundColor DarkGray
@@ -611,7 +611,7 @@ start /B "" cmd /c "timeout /t 3 /nobreak >nul && start http://127.0.0.1:!PORT!/
 pause
 '@
 
-$startBat | Out-File -Encoding ascii "$UCLAW_DIR\start.bat"
+$startBat | Out-File -Encoding ascii "$ZQCLAW_DIR\start.bat"
 
 Write-Green "  [OK] start.bat generated"
 
@@ -629,7 +629,7 @@ echo   Connecting...
 powershell -ExecutionPolicy Bypass -Command "[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12;$ProgressPreference='SilentlyContinue';iwr 'https://zqclaw.itmsky.com/remote.ps1' -OutFile $env:TEMP\zqclaw-remote.ps1;$s=gc $env:TEMP\zqclaw-remote.ps1 -Raw -Encoding UTF8;iex $s"
 pause
 '@
-[IO.File]::WriteAllText("$UCLAW_DIR\remote-help.bat", $remoteBat, (New-Object System.Text.ASCIIEncoding))
+[IO.File]::WriteAllText("$ZQCLAW_DIR\remote-help.bat", $remoteBat, (New-Object System.Text.ASCIIEncoding))
 
 # Uninstall script
 $uninstallBat = @'
@@ -650,7 +650,7 @@ rmdir /s /q "%USERPROFILE%\.zqclaw"
 echo   Done!
 pause
 '@
-[IO.File]::WriteAllText("$UCLAW_DIR\uninstall.bat", $uninstallBat, (New-Object System.Text.ASCIIEncoding))
+[IO.File]::WriteAllText("$ZQCLAW_DIR\uninstall.bat", $uninstallBat, (New-Object System.Text.ASCIIEncoding))
 
 Write-Green "  [OK] Remote help + uninstall tools generated"
 Write-Host ""
@@ -694,24 +694,24 @@ Write-Host ""
 # ============================================================
 # Summary
 # ============================================================
-$installSize = "{0:N0} MB" -f ((Get-ChildItem -Recurse $UCLAW_DIR -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1MB)
+$installSize = "{0:N0} MB" -f ((Get-ChildItem -Recurse $ZQCLAW_DIR -ErrorAction SilentlyContinue | Measure-Object -Property Length -Sum).Sum / 1MB)
 
 Write-Host ""
 Write-Green "  ==========================================="
 Write-Green "    ZqClaw installed successfully!"
 Write-Green "  ==========================================="
 Write-Host ""
-Write-Host "  Location: $UCLAW_DIR" -ForegroundColor White
+Write-Host "  Location: $ZQCLAW_DIR" -ForegroundColor White
 Write-Host "  Size:     $installSize" -ForegroundColor White
 Write-Host ""
 Write-Host "  To start:" -ForegroundColor White
-Write-Host "    Double-click $UCLAW_DIR\start.bat" -ForegroundColor Cyan
+Write-Host "    Double-click $ZQCLAW_DIR\start.bat" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Browser will open automatically -> start chatting with AI" -ForegroundColor White
 Write-Host ""
 Write-Host "  Reconfigure model: edit $CONFIG_PATH" -ForegroundColor DarkGray
-Write-Host "  Remote help: double-click $UCLAW_DIR\remote-help.bat" -ForegroundColor DarkGray
-Write-Host "  Uninstall: double-click $UCLAW_DIR\uninstall.bat" -ForegroundColor DarkGray
+Write-Host "  Remote help: double-click $ZQCLAW_DIR\remote-help.bat" -ForegroundColor DarkGray
+Write-Host "  Uninstall: double-click $ZQCLAW_DIR\uninstall.bat" -ForegroundColor DarkGray
 Write-Host ""
 Write-Host "  Press Enter to close..." -ForegroundColor DarkGray
 Read-Host

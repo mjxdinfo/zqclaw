@@ -20,10 +20,10 @@ DIM='\033[2m'
 NC='\033[0m'
 
 # ---- 常量 ----
-UCLAW_DIR="$HOME/.zqclaw"
-RUNTIME_DIR="$UCLAW_DIR/runtime"
-CORE_DIR="$UCLAW_DIR/core"
-DATA_DIR="$UCLAW_DIR/data"
+ZQCLAW_DIR="$HOME/.zqclaw"
+RUNTIME_DIR="$ZQCLAW_DIR/runtime"
+CORE_DIR="$ZQCLAW_DIR/core"
+DATA_DIR="$ZQCLAW_DIR/data"
 CONFIG_PATH="$DATA_DIR/.openclaw/openclaw.json"
 NODE_VERSION="v22.16.0"
 MIRROR="https://registry.npmmirror.com"
@@ -76,12 +76,12 @@ else
     exit 1
 fi
 
-echo -e "  安装目录: ${CYAN}$UCLAW_DIR${NC}"
+echo -e "  安装目录: ${CYAN}$ZQCLAW_DIR${NC}"
 echo ""
 
 # 检查已有安装
-if [ -d "$UCLAW_DIR/core/node_modules/openclaw" ]; then
-    echo -e "  ${YELLOW}检测到已有安装: $UCLAW_DIR${NC}"
+if [ -d "$ZQCLAW_DIR/core/node_modules/openclaw" ]; then
+    echo -e "  ${YELLOW}检测到已有安装: $ZQCLAW_DIR${NC}"
     if [ -t 0 ]; then
         read -p "  覆盖安装？(y/n) [y]: " -n 1 OVERWRITE
         echo ""
@@ -871,13 +871,13 @@ echo ""
 # ============================================================
 # 完成
 # ============================================================
-INSTALL_SIZE=$(du -sh "$UCLAW_DIR" 2>/dev/null | cut -f1 || echo "未知")
+INSTALL_SIZE=$(du -sh "$ZQCLAW_DIR" 2>/dev/null | cut -f1 || echo "未知")
 echo -e "${GREEN}"
 echo "  ╔══════════════════════════════════════════╗"
 echo "  ║  ZqClaw 安装成功！                       ║"
 echo "  ╚══════════════════════════════════════════╝"
 echo -e "${NC}"
-echo "  安装目录: $UCLAW_DIR"
+echo "  安装目录: $ZQCLAW_DIR"
 echo "  占用空间: $INSTALL_SIZE"
 echo ""
 echo "  启动方式："
@@ -887,26 +887,26 @@ echo "  浏览器会自动打开配置页面"
 echo ""
 
 # 生成启动脚本
-cat > "$UCLAW_DIR/start.sh" << STARTEOF
+cat > "$ZQCLAW_DIR/start.sh" << STARTEOF
 #!/bin/bash
-cd "$UCLAW_DIR/core"
-export PATH="$UCLAW_DIR/runtime/node-linux-x64/bin:$PATH"
+cd "$ZQCLAW_DIR/core"
+export PATH="$ZQCLAW_DIR/runtime/node-linux-x64/bin:$PATH"
 openclaw gateway run
 STARTEOF
-chmod +x "$UCLAW_DIR/start.sh"
+chmod +x "$ZQCLAW_DIR/start.sh"
 
 # 生成卸载脚本
-cat > "$UCLAW_DIR/uninstall.sh" << UNINSTALLEOF
+cat > "$ZQCLAW_DIR/uninstall.sh" << UNINSTALLEOF
 #!/bin/bash
-echo "  将删除: $UCLAW_DIR"
+echo "  将删除: $ZQCLAW_DIR"
 read -p "  确认卸载？(y/n) [n]: " CONFIRM
 if [ "\$CONFIRM" = "y" ] || [ "\$CONFIRM" = "Y" ]; then
-    rm -rf "$UCLAW_DIR"
+    rm -rf "$ZQCLAW_DIR"
     echo "  卸载完成"
 fi
 UNINSTALLEOF
-chmod +x "$UCLAW_DIR/uninstall.sh"
+chmod +x "$ZQCLAW_DIR/uninstall.sh"
 
-echo "  工具脚本: $UCLAW_DIR/start.sh"
-echo "  卸载脚本: $UCLAW_DIR/uninstall.sh"
+echo "  工具脚本: $ZQCLAW_DIR/start.sh"
+echo "  卸载脚本: $ZQCLAW_DIR/uninstall.sh"
 echo ""

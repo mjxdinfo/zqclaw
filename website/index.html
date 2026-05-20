@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZqClaw 智维盘 — OpenClaw 离线安装 U 盘</title>
+    <meta name="description" content="智维盘 - 全球首个 U 盘里运行的 AI 助手。插上就能用，双击就安装，专为中国用户打造。">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 24px; font-weight: bold; color: #ff6b35; text-decoration: none; }
+        .logo span { color: #333; }
+        nav { display: flex; gap: 30px; }
+        nav a { text-decoration: none; color: #666; font-size: 15px; transition: color 0.3s; }
+        nav a:hover { color: #ff6b35; }
+        
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 80px 0; text-align: center; }
+        .hero h1 { font-size: 48px; margin-bottom: 20px; }
+        .hero p { font-size: 20px; opacity: 0.9; margin-bottom: 40px; }
+        .hero-badges { display: flex; justify-content: center; gap: 40px; margin-top: 40px; }
+        .badge { background: rgba(255,255,255,0.15); padding: 20px 30px; border-radius: 12px; }
+        .badge-number { font-size: 36px; font-weight: bold; }
+        .badge-label { font-size: 14px; opacity: 0.8; }
+        
+        /* Section */
+        .section { padding: 80px 0; }
+        .section-title { text-align: center; font-size: 36px; margin-bottom: 50px; }
+        .section-subtitle { text-align: center; color: #666; margin-top: -40px; margin-bottom: 50px; font-size: 18px; }
+        
+        /* Why */
+        .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; }
+        .why-card { background: #f8f9fa; padding: 30px; border-radius: 16px; transition: transform 0.3s, box-shadow 0.3s; }
+        .why-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .why-icon { font-size: 40px; margin-bottom: 20px; }
+        .why-title { font-size: 20px; margin-bottom: 10px; color: #333; }
+        .why-desc { color: #666; font-size: 15px; }
+        
+        /* Features */
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .feature-card { background: #fff; border: 1px solid #eee; padding: 30px; border-radius: 16px; transition: all 0.3s; }
+        .feature-card:hover { border-color: #ff6b35; box-shadow: 0 10px 30px rgba(255,107,53,0.1); }
+        .feature-icon { font-size: 32px; margin-bottom: 15px; }
+        .feature-title { font-size: 20px; margin-bottom: 10px; }
+        .feature-desc { color: #666; font-size: 14px; }
+        
+        /* Steps */
+        .steps { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+        .step { text-align: center; max-width: 280px; }
+        .step-number { width: 60px; height: 60px; background: linear-gradient(135deg, #ff6b35, #ff8f6b); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; margin: 0 auto 20px; }
+        .step-title { font-size: 18px; margin-bottom: 10px; }
+        .step-desc { color: #666; font-size: 14px; }
+        
+        /* Models */
+        .models-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .models-table th { background: #f8f9fa; padding: 20px; text-align: left; font-weight: 600; }
+        .models-table td { padding: 18px 20px; border-top: 1px solid #eee; }
+        .models-table tr:hover { background: #fafafa; }
+        .model-name { font-weight: 600; }
+        .model-provider { color: #666; font-size: 14px; }
+        .model-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-left: 10px; }
+        .model-tag.global { background: #e3f2fd; color: #1565c0; }
+        
+        /* CTA */
+        .cta { background: linear-gradient(135deg, #ff6b35, #ff8f6b); color: #fff; padding: 60px 0; text-align: center; }
+        .cta h2 { font-size: 32px; margin-bottom: 20px; }
+        .cta p { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+        .cta-buttons { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+        .btn { display: inline-block; padding: 15px 40px; border-radius: 30px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+        .btn-primary { background: #fff; color: #ff6b35; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        .btn-secondary { background: transparent; color: #fff; border: 2px solid #fff; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+        
+        /* Footer */
+        footer { background: #1a1a2e; color: #fff; padding: 60px 0 30px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-title { font-size: 18px; margin-bottom: 20px; color: #fff; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 12px; }
+        .footer-links a { color: #aaa; text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: #ff6b35; }
+        .footer-bottom { border-top: 1px solid #333; padding-top: 30px; text-align: center; color: #666; font-size: 14px; }
+        
+        /* Code Block */
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px 25px; border-radius: 12px; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; overflow-x: auto; margin: 20px 0; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .cmd { color: #dcdcaa; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 32px; }
+            .hero-badges { flex-wrap: wrap; gap: 20px; }
+            .steps { flex-direction: column; align-items: center; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo">🦞 <span>ZqClaw</span> 智维盘</a>
+            <nav>
+                <a href="tutorial.html">教程</a>
+                <a href="cloud.html">云服务</a>
+                <a href="https://github.com/mjxdinfo/zqclaw" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1>🦞 ZqClaw 智维盘</h1>
+            <p>OpenClaw 离线安装 U 盘 · 插上就能用，双击就安装 · 专为中国用户打造</p>
+            <div class="hero-badges">
+                <div class="badge">
+                    <div class="badge-number">1.3GB</div>
+                    <div class="badge-label">全部打包</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">52</div>
+                    <div class="badge-label">预装技能</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">8+</div>
+                    <div class="badge-label">国产模型</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">4</div>
+                    <div class="badge-label">平台支持</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">为什么需要智维盘？</h2>
+            <p class="section-subtitle">在中国安装 OpenClaw 是个噩梦，智维盘解决所有问题</p>
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon">🚫</div>
+                    <div class="why-title">GitHub 打不开</div>
+                    <div class="why-desc">源码下不了，npm 依赖装不上</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">⏳</div>
+                    <div class="why-title">npm install 超时</div>
+                    <div class="why-desc">800+ 依赖包，在国内网络下载到崩溃</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">🔧</div>
+                    <div class="why-title">环境配置复杂</div>
+                    <div class="why-desc">Node.js 版本、构建工具、各种报错</div>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon">✅</div>
+                    <div class="why-title">智维盘的答案</div>
+                    <div class="why-desc">全部打包好，插 U 盘，双击运行，搞定</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">功能特性</h2>
+            <p class="section-subtitle">不只是安装盘，更是一整套 AI 生产力工具</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🚀</div>
+                    <div class="feature-title">一键安装</div>
+                    <div class="feature-desc">雨林木风风格启动菜单，16 个功能：安装、修复、备份、还原、重置。macOS / Windows / Linux 三系统，双击就能用。</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🇨🇳</div>
+                    <div class="feature-title">中国优化</div>
+                    <div class="feature-desc">8 个国产 AI 模型：DeepSeek、Kimi、通义千问、智谱、MiniMax、豆包、百度千帆、小米 Mimo。一键配置。</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <div class="feature-title">QQ 官方</div>
+                    <div class="feature-desc">腾讯 QQ 机器人，3 条命令搞定。QQ 可能是国内 AI 助手最强入口。</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <div class="feature-title">7+ 聊天平台</div>
+                    <div class="feature-desc">QQ、飞书、微信、Telegram、Discord、WhatsApp、Slack。企业微信和钉钉即将支持。</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">52 技能</div>
+                    <div class="feature-desc">预装生产力技能：GitHub、邮件、笔记、PDF、AI绘图、天气、日程...全部离线可用，无需下载。</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <div class="feature-title">备份 / 还原 / 修复</div>
+                    <div class="feature-desc">出问题？插 U 盘选修复。要重置？自动备份后恢复出厂。完整维护工具箱。</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">3 步搞定</h2>
+            <p class="section-subtitle">双口 U 盘（USB-A + USB-C），Mac / Windows / Linux 通用</p>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">插入 U 盘</div>
+                    <div class="step-desc">双口 U 盘，USB-C 插 MacBook，USB-A 插 Windows 电脑</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">双击启动菜单</div>
+                    <div class="step-desc">Mac 双击「启动菜单.command」，Win 双击「启动菜单.bat」，Linux 运行「运行.sh」</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">选择安装，搞定</div>
+                    <div class="step-desc">选 [1] 一键安装，2 分钟后在终端输入 openclaw 即可使用</div>
+                </div>
+            </div>
+            <div class="code-block" style="margin-top: 40px;">
+                <span class="cmd">$</span> openclaw plugins install @sliverp/qqbot@latest<br>
+                <span class="cmd">$</span> openclaw channels add --channel qqbot --token "AppID:Secret"<br>
+                <span class="cmd">$</span> openclaw gateway restart<br>
+                <span class="comment">✓ QQ Bot is now running / QQ 机器人已启动</span>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">支持的 AI 模型</h2>
+            <p class="section-subtitle">国产模型无需翻墙，国内直接可用</p>
+            <table class="models-table">
+                <thead>
+                    <tr>
+                        <th>模型</th>
+                        <th>提供商</th>
+                        <th>特长</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="model-name">DeepSeek <span class="model-tag">推荐</span></td>
+                        <td class="model-provider">深度求索</td>
+                        <td>编程，性价比之王</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">Kimi K2.5</td>
+                        <td class="model-provider">月之暗面</td>
+                        <td>256K 超长上下文，长文档</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">Qwen <span class="model-tag">免费</span></td>
+                        <td class="model-provider">阿里通义千问</td>
+                        <td>免费额度最大</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">GLM 4.7</td>
+                        <td class="model-provider">智谱 AI</td>
+                        <td>学术，中文 NLP</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">MiniMax</td>
+                        <td class="model-provider">MiniMax</td>
+                        <td>语音，多模态</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">Doubao</td>
+                        <td class="model-provider">字节豆包</td>
+                        <td>火山引擎生态</td>
+                    </tr>
+                    <tr>
+                        <td class="model-name">Claude <span class="model-tag global">Global</span></td>
+                        <td class="model-provider">Anthropic</td>
+                        <td>最强综合能力</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    
+    <section class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">开始使用智维盘</h2>
+            <p class="section-subtitle">免费开源 · MIT 协议 · 自由分发</p>
+            <div class="cta-buttons">
+                <a href="tutorial.html" class="btn btn-primary">查看完整教程</a>
+                <a href="cloud.html" class="btn btn-secondary">云服务充值</a>
+                <a href="https://github.com/mjxdinfo/zqclaw" class="btn btn-secondary" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-title">🦞 ZqClaw 智维盘</div>
+                    <p style="color: #aaa; font-size: 14px;">基于 OpenClaw 的 U 盘 AI 助手。<br>插上就能用，双击就安装。</p>
+                </div>
+                <div>
+                    <div class="footer-title">资源</div>
+                    <ul class="footer-links">
+                        <li><a href="tutorial.html">完整教程</a></li>
+                        <li><a href="cloud.html">云服务</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/releases" target="_blank">下载</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">联系我们</div>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/issues" target="_blank">问题反馈</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/discussions" target="_blank">讨论交流</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 ZqClaw 智维盘 · 基于 <a href="https://github.com/openclaw/openclaw" style="color: #ff6b35;" target="_blank">OpenClaw</a> · MIT License</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

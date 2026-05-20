@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教程 - ZqClaw 智维盘</title>
+    <meta name="description" content="从零开始，搭建你的私人 AI 助手。小白也能看懂的完整安装配置教程。">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #333; line-height: 1.7; }
+        .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 24px; font-weight: bold; color: #ff6b35; text-decoration: none; }
+        .logo span { color: #333; }
+        nav { display: flex; gap: 30px; }
+        nav a { text-decoration: none; color: #666; font-size: 15px; transition: color 0.3s; }
+        nav a:hover { color: #ff6b35; }
+        
+        /* Content */
+        .content { padding: 60px 0; }
+        h1 { font-size: 36px; margin-bottom: 20px; color: #1a1a2e; }
+        h2 { font-size: 28px; margin: 50px 0 20px; color: #1a1a2e; border-bottom: 2px solid #ff6b35; padding-bottom: 10px; }
+        h3 { font-size: 20px; margin: 30px 0 15px; color: #333; }
+        p { margin-bottom: 16px; color: #555; }
+        ul, ol { margin: 16px 0; padding-left: 30px; }
+        li { margin-bottom: 10px; }
+        a { color: #ff6b35; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        
+        /* Code Block */
+        .code-block { background: #1e1e1e; color: #d4d4d4; padding: 20px 25px; border-radius: 12px; font-family: 'Monaco', 'Menlo', monospace; font-size: 14px; overflow-x: auto; margin: 20px 0; }
+        .code-block .comment { color: #6a9955; }
+        .code-block .cmd { color: #dcdcaa; }
+        .code-block .string { color: #ce9178; }
+        
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 15px; text-align: left; border: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        tr:hover { background: #fafafa; }
+        
+        /* Card */
+        .card { background: #f8f9fa; padding: 25px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #ff6b35; }
+        .card-title { font-weight: 600; margin-bottom: 10px; }
+        
+        /* Alert */
+        .alert { background: #fff3cd; padding: 15px 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107; }
+        .alert-title { font-weight: 600; margin-bottom: 5px; }
+        
+        /* Steps */
+        .step { margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 12px; }
+        .step-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #ff6b35; }
+        
+        /* Footer */
+        footer { background: #1a1a2e; color: #fff; padding: 40px 0; text-align: center; }
+        footer p { color: #666; font-size: 14px; }
+        footer a { color: #ff6b35; }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 28px; }
+            h2 { font-size: 22px; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">🦞 <span>ZqClaw</span> 智维盘</a>
+            <nav>
+                <a href="index.html">首页</a>
+                <a href="tutorial.html">教程</a>
+                <a href="cloud.html">云服务</a>
+                <a href="https://github.com/mjxdinfo/zqclaw" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="content">
+            <h1>📖 智维盘完整教程</h1>
+            <p style="font-size: 18px; color: #666;">从零开始，搭建你的私人 AI 助手 —— 小白也能看懂</p>
+            
+            <h2 id="what">什么是 OpenClaw？</h2>
+            <p>OpenClaw 是一个开源 AI 助手框架，可以理解为：</p>
+            <ul>
+                <li>🤖 <strong>AI 机器人</strong>：接入 QQ、飞书、Telegram 等 20+ 聊天平台</li>
+                <li>🧠 <strong>智能网关</strong>：调用 DeepSeek、Kimi、Claude 等 50+ AI 模型</li>
+                <li>🔧 <strong>全能助手</strong>：52+ 技能：发邮件、管日程、操作笔记、搜索</li>
+                <li>⏰ <strong>自动化</strong>：设定时任务、自动执行工作流</li>
+            </ul>
+            
+            <h3>核心架构</h3>
+            <div class="code-block">
+                你的聊天平台 ←→ OpenClaw Gateway ←→ AI 模型<br>
+                (QQ/飞书/TG)    (你的电脑)       (DeepSeek/Kimi/Claude)<br>
+                ↕<br>
+                技能 & 工具<br>
+                (邮件/笔记/日程/搜索...)
+            </div>
+            
+            <p><strong>智维盘</strong>是 OpenClaw 的便携版 —— 把整套系统做成 U 盘，插上就能用，还能安装到电脑。所有依赖走国内镜像，无需翻墙。</p>
+            
+            <h2 id="install">选择安装方式</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>方式</th>
+                        <th>适合谁</th>
+                        <th>需要联网</th>
+                        <th>难度</th>
+                        <th>耗时</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>A. U 盘安装</td>
+                        <td>完全小白</td>
+                        <td>不需要</td>
+                        <td>简单</td>
+                        <td>2 分钟</td>
+                    </tr>
+                    <tr>
+                        <td>B. 一键脚本</td>
+                        <td>会用终端的用户</td>
+                        <td>需要</td>
+                        <td>简单</td>
+                        <td>5 分钟</td>
+                    </tr>
+                    <tr>
+                        <td>C. 手工安装</td>
+                        <td>想深入理解的开发者</td>
+                        <td>需要</td>
+                        <td>中等</td>
+                        <td>15 分钟</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2 id="usb">方式 A：U 盘安装（推荐小白）</h2>
+            <p>最简单的方式，不需要联网，不需要终端知识。</p>
+            
+            <div class="step">
+                <div class="step-title">第一步：插入智维盘 U 盘</div>
+                <p>把智维盘 U 盘插入电脑的 USB 口。</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">第二步：运行启动脚本</div>
+                <ul>
+                    <li>Mac：双击 <code>Mac-Start.command</code></li>
+                    <li>Windows：双击 <code>Windows-Start.bat</code></li>
+                </ul>
+                <div class="alert">
+                    <div class="alert-title">Mac 提示「未验证的开发者」？</div>
+                    <p>右键脚本 → 打开。</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">第三步：首次配置</div>
+                <p>浏览器自动打开配置页面，选择 AI 模型、填入 API Key，完成！</p>
+            </div>
+            
+            <h3>安装到电脑（可选）</h3>
+            <p>如果不想每次都插 U 盘：</p>
+            <ul>
+                <li>Mac：双击 <code>Mac-Install.command</code>，安装到 <code>~/.zqclaw/</code></li>
+                <li>Windows：双击 <code>Windows-Install.bat</code>，安装到 <code>%USERPROFILE%\.zqclaw\</code></li>
+            </ul>
+            
+            <h2 id="script">方式 B：一键脚本安装</h2>
+            <p>需要联网，通过终端一行命令完成安装。</p>
+            
+            <h3>Mac / Linux / WSL2</h3>
+            <div class="code-block">
+                <span class="cmd">curl -fsSL https://zqclaw.com/install.sh | bash</span>
+            </div>
+            
+            <h3>Windows (PowerShell 管理员)</h3>
+            <div class="code-block">
+                <span class="cmd">irm https://zqclaw.com/install.ps1 | iex</span>
+            </div>
+            
+            <h3>验证安装</h3>
+            <div class="code-block">
+                <span class="cmd">openclaw --version</span> <span class="comment"># 查看版本</span><br>
+                <span class="cmd">openclaw onboard</span> <span class="comment"># 启动配置向导</span>
+            </div>
+            
+            <h2 id="manual">方式 C：完全手工安装（开发者推荐）</h2>
+            <p>一步一步手动安装，理解每个组件。适合想深入学习、或网络环境特殊的用户。</p>
+            
+            <h3>第一步：安装 Node.js 22+</h3>
+            <p>OpenClaw 运行在 Node.js 上，需要 v22 或更高版本。</p>
+            
+            <div class="card">
+                <div class="card-title">什么是 Node.js？</div>
+                <p>Node.js 是一个 JavaScript 运行环境。你不需要会写 JavaScript，只需要安装它作为 OpenClaw 的运行基础。类似于「Java 程序需要 JDK」。</p>
+            </div>
+            
+            <h4>方法 A：官网下载（最简单）</h4>
+            <ul>
+                <li>国内直连：<a href="https://nodejs.cn/download/" target="_blank">nodejs.cn/download</a>（速度快）</li>
+                <li>官网：<a href="https://nodejs.org/en/download" target="_blank">nodejs.org/download</a></li>
+            </ul>
+            <p>下载 .pkg（Mac）或 .msi（Windows）安装包，双击安装。</p>
+            
+            <h4>方法 B：nvm 版本管理器（开发者推荐）</h4>
+            <div class="code-block">
+                <span class="comment"># 1. 安装 nvm</span><br>
+                <span class="cmd">curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash</span><br><br>
+                <span class="comment"># 2. 设置国内镜像（关键！否则下载很慢）</span><br>
+                <span class="cmd">echo 'export NVM_NODEJS_ORG_MIRROR=https://npmmirror.com/mirrors/node' >> ~/.zshrc</span><br>
+                <span class="cmd">source ~/.zshrc</span><br><br>
+                <span class="comment"># 3. 安装 Node.js 22</span><br>
+                <span class="cmd">nvm install 22</span><br>
+                <span class="cmd">nvm use 22</span><br><br>
+                <span class="comment"># 4. 验证</span><br>
+                <span class="cmd">node -v</span> <span class="comment"># 应显示 v22.x.x</span>
+            </div>
+            
+            <h3>第二步：设置 npm 国内镜像</h3>
+            <p><strong>必须做！</strong>不换镜像的话，后续安装 OpenClaw 会超时失败。</p>
+            <div class="code-block">
+                <span class="comment"># 设置淘宝 npmmirror（首选，最快最稳）</span><br>
+                <span class="cmd">npm config set registry https://registry.npmmirror.com</span><br><br>
+                <span class="comment"># 验证</span><br>
+                <span class="cmd">npm config get registry</span><br>
+                <span class="comment"># 应返回: https://registry.npmmirror.com/</span>
+            </div>
+            
+            <h3>第三步：安装 OpenClaw</h3>
+            <h4>方式 A：npm 安装（通用）</h4>
+            <div class="code-block">
+                <span class="comment"># 全局安装</span><br>
+                <span class="cmd">npm install -g openclaw@latest</span><br><br>
+                <span class="comment"># 如果超时，手动指定镜像</span><br>
+                <span class="cmd">npm install -g openclaw@latest --registry=https://registry.npmmirror.com</span><br><br>
+                <span class="comment"># 验证</span><br>
+                <span class="cmd">openclaw --version</span>
+            </div>
+            
+            <h4>方式 B：pnpm 安装（更快）</h4>
+            <div class="code-block">
+                <span class="comment"># 如果没有 pnpm，先安装</span><br>
+                <span class="cmd">npm install -g pnpm</span><br><br>
+                <span class="comment"># 用 pnpm 安装 OpenClaw</span><br>
+                <span class="cmd">pnpm add -g openclaw@latest</span><br>
+                <span class="cmd">pnpm approve-builds -g</span><br>
+                <span class="cmd">openclaw onboard --install-daemon</span>
+            </div>
+            
+            <h4>方式 C：从源码构建（开发者）</h4>
+            <div class="code-block">
+                <span class="cmd">git clone https://github.com/openclaw/openclaw.git</span><br>
+                <span class="cmd">cd openclaw && pnpm install && pnpm ui:build && pnpm build</span><br>
+                <span class="cmd">pnpm link --global</span><br>
+                <span class="cmd">openclaw --version</span>
+            </div>
+            
+            <h3>第四步：启动配置向导</h3>
+            <div class="code-block">
+                <span class="comment"># 推荐：启动向导 + 安装后台服务</span><br>
+                <span class="cmd">openclaw onboard --install-daemon</span><br><br>
+                <span class="comment"># 或只启动向导</span><br>
+                <span class="cmd">openclaw onboard</span>
+            </div>
+            
+            <h3>第五步：验证一切正常</h3>
+            <div class="code-block">
+                <span class="cmd">openclaw status</span> <span class="comment"># 查看运行状态</span><br>
+                <span class="cmd">openclaw doctor --repair</span> <span class="comment"># 诊断并修复问题</span><br>
+                <span class="cmd">openclaw dashboard</span> <span class="comment"># 打开网页控制台</span>
+            </div>
+            
+            <h2 id="models">模型选择指南</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>模型</th>
+                        <th>特长</th>
+                        <th>价格</th>
+                        <th>需翻墙</th>
+                        <th>推荐场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>DeepSeek</td>
+                        <td>编程、逻辑</td>
+                        <td>~1元/百万token</td>
+                        <td>不需要</td>
+                        <td>⭐ 日常首选</td>
+                    </tr>
+                    <tr>
+                        <td>Kimi</td>
+                        <td>长文档 256K</td>
+                        <td>中等</td>
+                        <td>不需要</td>
+                        <td>长文分析</td>
+                    </tr>
+                    <tr>
+                        <td>通义千问</td>
+                        <td>中文理解好</td>
+                        <td>大量免费额度</td>
+                        <td>不需要</td>
+                        <td>免费体验</td>
+                    </tr>
+                    <tr>
+                        <td>智谱 GLM</td>
+                        <td>学术 NLP</td>
+                        <td>有免费额度</td>
+                        <td>不需要</td>
+                        <td>学术场景</td>
+                    </tr>
+                    <tr>
+                        <td>Claude</td>
+                        <td>最强综合</td>
+                        <td>较贵</td>
+                        <td>需要</td>
+                        <td>复杂推理</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4</td>
+                        <td>广泛兼容</td>
+                        <td>较贵</td>
+                        <td>需要</td>
+                        <td>通用</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="alert">
+                <div class="alert-title">推荐：</div>
+                <p>国内用户先选 DeepSeek，注册即送免费额度，API 直连无需翻墙。</p>
+            </div>
+            
+            <h2 id="qq">QQ 机器人配置（国内首选）</h2>
+            <p>腾讯官方已为 OpenClaw 开放 QQ 机器人能力。完全免费，无需翻墙。</p>
+            
+            <div class="step">
+                <div class="step-title">第一步：创建机器人</div>
+                <p>前往 <a href="https://q.qq.com" target="_blank">QQ 开放平台</a>，点击「创建机器人」→ 填写基本信息 → 获得 AppID 和 AppSecret。</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">第二步：安装 QQ 插件并配置</div>
+                <div class="code-block">
+                    <span class="comment"># 安装 QQ 插件（智维盘用户已预装，跳过此步）</span><br>
+                    <span class="cmd">openclaw plugins install @sliverp/qqbot@latest</span><br><br>
+                    <span class="comment"># 绑定 QQ 机器人</span><br>
+                    <span class="cmd">openclaw channels add --channel qqbot --token "你的AppID:你的AppSecret"</span><br><br>
+                    <span class="comment"># 设置白名单（重要！否则任何人都能用你的机器人）</span><br>
+                    <span class="cmd">openclaw config set channels.qqbot.allowFrom "你的QQ号"</span><br><br>
+                    <span class="comment"># 重启生效</span><br>
+                    <span class="cmd">openclaw gateway restart</span>
+                </div>
+            </div>
+            
+            <div class="alert">
+                <div class="alert-title">⚠️ 安全提醒：</div>
+                <p>一定要设置 allowFrom 白名单！默认是 *（任何人都能用），会消耗你的 API 额度。</p>
+            </div>
+            
+            <h2 id="feishu">飞书机器人配置（企业推荐）</h2>
+            
+            <div class="step">
+                <div class="step-title">第一步：获取凭证</div>
+                <p>在应用的「凭证与基础信息」页面，复制 App ID 和 App Secret。</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">第二步：配置权限</div>
+                <p>进入「权限管理」，开启消息相关权限（接收消息、发送消息、获取用户信息等）。</p>
+            </div>
+            
+            <div class="step">
+                <div class="step-title">第三步：绑定到 OpenClaw</div>
+                <div class="code-block">
+                    <span class="cmd">openclaw channels add --channel feishu --token "你的AppID:你的AppSecret"</span><br>
+                    <span class="cmd">openclaw gateway restart</span>
+                </div>
+            </div>
+            
+            <h2 id="skills">技能系统</h2>
+            <p>智维盘已预装 52 个技能，开箱即用。</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>技能</th>
+                        <th>用途</th>
+                        <th>示例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>github</td>
+                        <td>GitHub 操作</td>
+                        <td>「帮我看 #123 这个 Issue」</td>
+                    </tr>
+                    <tr>
+                        <td>summarize</td>
+                        <td>内容总结</td>
+                        <td>「总结这个网页」</td>
+                    </tr>
+                    <tr>
+                        <td>weather</td>
+                        <td>天气查询</td>
+                        <td>「今天北京天气」</td>
+                    </tr>
+                    <tr>
+                        <td>himalaya</td>
+                        <td>邮件管理</td>
+                        <td>「帮我发邮件」</td>
+                    </tr>
+                    <tr>
+                        <td>obsidian</td>
+                        <td>笔记操作</td>
+                        <td>「在 Obsidian 创建笔记」</td>
+                    </tr>
+                    <tr>
+                        <td>coding-agent</td>
+                        <td>编程委派</td>
+                        <td>「帮我重构这个函数」</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="code-block">
+                <span class="comment"># 搜索更多技能</span><br>
+                <span class="cmd">openclaw skills search 翻译</span><br><br>
+                <span class="comment"># 安装新技能</span><br>
+                <span class="cmd">openclaw skills install @xxx/skill-name</span>
+            </div>
+            
+            <h2 id="troubleshoot">故障排除</h2>
+            
+            <h3>"Node.js v22+ is required"</h3>
+            <div class="code-block">
+                <span class="comment"># 检查当前版本</span><br>
+                <span class="cmd">node -v</span><br><br>
+                <span class="comment"># 如果低于 v22，升级</span><br>
+                <span class="cmd">nvm install 22</span> <span class="comment"># 如果用 nvm</span><br>
+                <span class="cmd">fnm install 22</span> <span class="comment"># 如果用 fnm</span>
+            </div>
+            
+            <h3>npm install 超时</h3>
+            <div class="code-block">
+                <span class="comment"># 设置淘宝镜像</span><br>
+                <span class="cmd">npm config set registry https://registry.npmmirror.com</span><br><br>
+                <span class="comment"># 清除缓存重试</span><br>
+                <span class="cmd">npm cache clean --force</span><br>
+                <span class="cmd">npm install -g openclaw@latest</span>
+            </div>
+            
+            <h3>AI 不回复消息</h3>
+            <ul>
+                <li>检查 API Key 是否正确：<code>openclaw configure</code></li>
+                <li>检查网关是否在运行：<code>openclaw status</code></li>
+                <li>查看错误日志：<code>openclaw logs --follow</code></li>
+                <li>运行诊断：<code>openclaw doctor --repair</code></li>
+            </ul>
+            
+            <h3>端口被占用</h3>
+            <div class="code-block">
+                <span class="comment"># Mac/Linux:</span><br>
+                <span class="cmd">lsof -i :18789</span><br><br>
+                <span class="comment"># Windows:</span><br>
+                <span class="cmd">netstat -ano | findstr ":18789"</span><br><br>
+                <span class="comment"># 杀死进程后重启</span><br>
+                <span class="cmd">openclaw gateway restart</span>
+            </div>
+            
+            <h2 id="commands">命令速查</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>命令</th>
+                        <th>用途</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>openclaw status</code></td>
+                        <td>查看运行状态</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw dashboard</code></td>
+                        <td>打开网页控制台</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw tui</code></td>
+                        <td>终端对话模式</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw gateway restart</code></td>
+                        <td>重启网关</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw gateway stop</code></td>
+                        <td>停止网关</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw doctor --repair</code></td>
+                        <td>诊断并修复</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw configure</code></td>
+                        <td>重新配置</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw logs --follow</code></td>
+                        <td>实时查看日志</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw plugins list</code></td>
+                        <td>列出已安装插件</td>
+                    </tr>
+                    <tr>
+                        <td><code>openclaw cron list</code></td>
+                        <td>查看定时任务</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <h2 id="tips">多模型与省钱技巧</h2>
+            <ul>
+                <li>日常对话用 DeepSeek（~1元/百万 token），复杂任务切 Claude</li>
+                <li>用 OpenRouter 统一管理多个模型，一个 Key 用所有</li>
+                <li>为不同聊天平台配置不同模型（QQ 用便宜的，工作飞书用好的）</li>
+                <li>善用免费额度：通义千问、Gemini 都有大量免费额度</li>
+            </ul>
+            
+            <h2>相关资源</h2>
+            <ul>
+                <li><a href="https://github.com/mjxdinfo/zqclaw" target="_blank">ZqClaw GitHub</a> - 源码、Issue、Release</li>
+                <li><a href="https://github.com/openclaw/openclaw" target="_blank">OpenClaw 官方</a> - 上游仓库</li>
+                <li><a href="https://github.com/openclaw/clawhub" target="_blank">ClawHub</a> - 官方技能市场</li>
+                <li><a href="https://docs.openclaw.ai/zh-CN/install" target="_blank">OpenClaw 官方安装文档</a> - 含 pnpm、源码构建等</li>
+            </ul>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container">
+            <p>© 2026 ZqClaw 智维盘 · 基于 <a href="https://github.com/openclaw/openclaw" target="_blank">OpenClaw</a> · MIT License</p>
+        </div>
+    </footer>
+</body>
+</html>

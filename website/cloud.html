@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智维盘云 - ZqClaw AI API 服务</title>
+    <meta name="description" content="智维盘云 - OpenClaw 官方 AI API 服务。为智维盘 U 盘用户专属打造，接入 DeepSeek、Qwen，按量计费，开箱即用。">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; color: #333; line-height: 1.6; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header { background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
+        .header-content { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; max-width: 1200px; margin: 0 auto; }
+        .logo { font-size: 24px; font-weight: bold; color: #ff6b35; text-decoration: none; }
+        .logo span { color: #333; }
+        nav { display: flex; gap: 30px; }
+        nav a { text-decoration: none; color: #666; font-size: 15px; transition: color 0.3s; }
+        nav a:hover { color: #ff6b35; }
+        
+        /* Hero */
+        .hero { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; padding: 80px 0; text-align: center; }
+        .hero h1 { font-size: 42px; margin-bottom: 15px; }
+        .hero p { font-size: 18px; opacity: 0.9; margin-bottom: 30px; }
+        .hero-badges { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; }
+        .badge { background: rgba(255,255,255,0.15); padding: 15px 25px; border-radius: 10px; }
+        .badge-number { font-size: 28px; font-weight: bold; }
+        .badge-label { font-size: 13px; opacity: 0.8; }
+        
+        /* Section */
+        .section { padding: 70px 0; }
+        .section-title { text-align: center; font-size: 32px; margin-bottom: 40px; color: #1a1a2e; }
+        
+        /* Config Block */
+        .config-block { background: #1e1e1e; color: #d4d4d4; padding: 25px; border-radius: 12px; font-family: 'Monaco', 'Menlo', monospace; font-size: 13px; overflow-x: auto; margin: 25px 0; }
+        .config-block .comment { color: #6a9955; }
+        .config-block .string { color: #ce9178; }
+        .config-block .key { color: #9cdcfe; }
+        
+        /* Models Grid */
+        .models-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; }
+        .model-card { background: #f8f9fa; padding: 25px; border-radius: 16px; transition: all 0.3s; }
+        .model-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+        .model-icon { font-size: 36px; margin-bottom: 15px; }
+        .model-name { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+        .model-id { color: #666; font-size: 13px; margin-bottom: 15px; font-family: monospace; }
+        .model-desc { color: #555; font-size: 14px; margin-bottom: 15px; }
+        .model-price { font-size: 18px; color: #ff6b35; font-weight: 600; }
+        .model-tag { display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 15px; font-size: 12px; margin-left: 10px; }
+        
+        /* Steps */
+        .steps { display: flex; justify-content: center; gap: 50px; flex-wrap: wrap; }
+        .step { text-align: center; max-width: 280px; }
+        .step-number { width: 50px; height: 50px; background: linear-gradient(135deg, #ff6b35, #ff8f6b); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: bold; margin: 0 auto 15px; }
+        .step-title { font-size: 18px; margin-bottom: 10px; }
+        .step-desc { color: #666; font-size: 14px; }
+        
+        /* Pricing */
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 900px; margin: 0 auto; }
+        .price-card { background: #fff; border: 2px solid #eee; padding: 35px; border-radius: 20px; text-align: center; transition: all 0.3s; }
+        .price-card:hover { border-color: #ff6b35; transform: translateY(-5px); box-shadow: 0 15px 40px rgba(255,107,53,0.15); }
+        .price-card.featured { border-color: #ff6b35; position: relative; }
+        .price-card.featured::before { content: '最受欢迎'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #ff6b35; color: #fff; padding: 5px 20px; border-radius: 20px; font-size: 12px; }
+        .price-name { font-size: 20px; font-weight: 600; margin-bottom: 10px; }
+        .price-amount { font-size: 42px; font-weight: bold; color: #ff6b35; margin-bottom: 5px; }
+        .price-amount span { font-size: 16px; color: #999; }
+        .price-desc { color: #666; font-size: 14px; margin-bottom: 25px; }
+        .price-features { list-style: none; text-align: left; margin: 25px 0; }
+        .price-features li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; color: #555; font-size: 14px; }
+        .price-features li::before { content: '✓ '; color: #2e7d32; font-weight: bold; }
+        .price-btn { display: block; width: 100%; padding: 15px; background: #ff6b35; color: #fff; text-align: center; border-radius: 10px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+        .price-btn:hover { background: #e55a2b; }
+        
+        /* FAQ */
+        .faq-item { background: #f8f9fa; padding: 25px; border-radius: 12px; margin-bottom: 15px; }
+        .faq-q { font-weight: 600; margin-bottom: 10px; color: #1a1a2e; }
+        .faq-a { color: #666; font-size: 14px; line-height: 1.7; }
+        
+        /* CTA */
+        .cta { background: linear-gradient(135deg, #ff6b35, #ff8f6b); color: #fff; padding: 60px 0; text-align: center; }
+        .cta h2 { font-size: 28px; margin-bottom: 15px; }
+        .cta p { font-size: 16px; opacity: 0.9; margin-bottom: 25px; }
+        .cta-btn { display: inline-block; padding: 15px 50px; background: #fff; color: #ff6b35; border-radius: 30px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+        .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        
+        /* Footer */
+        footer { background: #1a1a2e; color: #fff; padding: 50px 0 30px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-title { font-size: 16px; margin-bottom: 15px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: #aaa; text-decoration: none; transition: color 0.3s; }
+        .footer-links a:hover { color: #ff6b35; }
+        .footer-bottom { border-top: 1px solid #333; padding-top: 25px; text-align: center; color: #666; font-size: 13px; }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 30px; }
+            .steps { flex-direction: column; align-items: center; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo">🦞 <span>ZqClaw</span> 智维盘</a>
+            <nav>
+                <a href="index.html">首页</a>
+                <a href="tutorial.html">教程</a>
+                <a href="cloud.html">云服务</a>
+                <a href="https://github.com/mjxdinfo/zqclaw" target="_blank">GitHub</a>
+            </nav>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <div class="container">
+            <h1>🦞 智维盘云</h1>
+            <p>OpenClaw 官方 AI API 服务 · 为智维盘 U 盘用户专属打造</p>
+            <p>接入 DeepSeek、Qwen，按量计费，开箱即用，无需折腾</p>
+            <div class="hero-badges" style="margin-top: 30px;">
+                <div class="badge">
+                    <div class="badge-number">¥3</div>
+                    <div class="badge-label">DeepSeek V3 起</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">¥10</div>
+                    <div class="badge-label">最低充值金额</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">秒到</div>
+                    <div class="badge-label">自动充值到账</div>
+                </div>
+                <div class="badge">
+                    <div class="badge-number">5+</div>
+                    <div class="badge-label">可用模型</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">快速接入</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">兼容 OpenAI 格式，切换模型只改一个字段，所有工具通用</p>
+            
+            <div class="config-block">
+<span class="comment">// OpenClaw 配置示例</span>
+{
+  <span class="key">"models"</span>: { <span class="key">"mode"</span>: <span class="string">"merge"</span>, <span class="key">"providers"</span>: {
+    <span class="key">"zqclaw"</span>: {
+      <span class="key">"baseUrl"</span>: <span class="string">"https://api.zqclaw.com/v1"</span>,
+      <span class="key">"apiKey"</span>: <span class="string">"sk-zq-your-key-here"</span>
+    }
+  }},
+  <span class="key">"agents"</span>: { <span class="key">"defaults"</span>: { <span class="key">"model"</span>: { <span class="key">"primary"</span>: <span class="string">"zqclaw/deepseek-chat"</span> }}}
+}
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-title">获取 API Key</div>
+                    <div class="step-desc">在下方充值区生成或粘贴你的 Key，选择金额，支付宝在线支付，余额秒到。</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-title">配置 API 地址</div>
+                    <div class="step-desc">Base URL 填 https://api.zqclaw.com/v1，API Key 填你的 sk-zq- 开头的 Key。</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-title">开始使用</div>
+                    <div class="step-desc">兼容所有 OpenAI 格式工具：OpenClaw、Cherry Studio、Cursor、沉浸式翻译等，直接用。</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">支持模型</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 40px;">主流模型，统一接口</p>
+            
+            <div class="models-grid">
+                <div class="model-card">
+                    <div class="model-icon">🐋</div>
+                    <div class="model-name">DeepSeek V3 <span class="model-tag">推荐首选</span></div>
+                    <div class="model-id">deepseek-chat</div>
+                    <div class="model-desc">日常对话、写作、代码，综合能力最强的主力模型，性价比极高</div>
+                    <div class="model-price">¥3 / 百万 token（输入）</div>
+                </div>
+                
+                <div class="model-card">
+                    <div class="model-icon">🧠</div>
+                    <div class="model-name">DeepSeek R1</div>
+                    <div class="model-id">deepseek-reasoner</div>
+                    <div class="model-desc">深度推理模型，复杂逻辑、数学证明、代码调试效果出色</div>
+                    <div class="model-price">¥12 / 百万 token（输入）</div>
+                </div>
+                
+                <div class="model-card">
+                    <div class="model-icon">⚡</div>
+                    <div class="model-name">Qwen Turbo <span class="model-tag">极速</span></div>
+                    <div class="model-id">qwen-turbo</div>
+                    <div class="model-desc">极速响应，适合高频轻量对话，中文表现好</div>
+                    <div class="model-price">¥1.8 / 百万 token（输入）</div>
+                </div>
+                
+                <div class="model-card">
+                    <div class="model-icon">🌟</div>
+                    <div class="model-name">Qwen Plus <span class="model-tag">中文优化</span></div>
+                    <div class="model-id">qwen-plus</div>
+                    <div class="model-desc">长文档理解强，中文语义把握准确，适合写作场景</div>
+                    <div class="model-price">¥4 / 百万 token（输入）</div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" id="recharge">
+        <div class="container">
+            <h2 class="section-title">价格</h2>
+            <p style="text-align: center; color: #666; margin-bottom: 40px;">简单透明，按用付费。用多少花多少，没有套路，余额永久有效。</p>
+            
+            <div class="pricing-grid">
+                <div class="price-card">
+                    <div class="price-name">轻度充值</div>
+                    <div class="price-amount">¥10 <span>起充</span></div>
+                    <div class="price-desc">适合尝鲜体验，灵活无压力</div>
+                    <ul class="price-features">
+                        <li>全模型可用</li>
+                        <li>余额永久有效</li>
+                        <li>支付宝充值</li>
+                        <li>支付后秒到账</li>
+                    </ul>
+                    <a href="#" class="price-btn">选择此档</a>
+                </div>
+                
+                <div class="price-card featured">
+                    <div class="price-name">标准充值</div>
+                    <div class="price-amount">¥50 <span>起充</span></div>
+                    <div class="price-desc">约 500 万 token，日常够用</div>
+                    <ul class="price-features">
+                        <li>全模型可用</li>
+                        <li>余额永久有效</li>
+                        <li>支付宝充值</li>
+                        <li>支付后秒到账</li>
+                    </ul>
+                    <a href="#" class="price-btn">选择此档</a>
+                </div>
+                
+                <div class="price-card">
+                    <div class="price-name">高级充值</div>
+                    <div class="price-amount">¥100 <span>起充</span></div>
+                    <div class="price-desc">约 1000 万 token，重度用户</div>
+                    <ul class="price-features">
+                        <li>全模型可用</li>
+                        <li>余额永久有效</li>
+                        <li>支付宝充值</li>
+                        <li>支付后秒到账</li>
+                    </ul>
+                    <a href="#" class="price-btn">选择此档</a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="section" style="background: #f8f9fa;">
+        <div class="container">
+            <h2 class="section-title">常见问题</h2>
+            
+            <div class="faq-item">
+                <div class="faq-q">智维盘云和直接用 DeepSeek 官方有什么区别？</div>
+                <div class="faq-a">智维盘云提供统一入口，人民币充值，多模型一个 Key 搞定，不用单独注册各家账号。配合智维盘 U 盘开箱即用，对国内用户更友好。</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-q">兼容哪些 AI 工具？</div>
+                <div class="faq-a">完全兼容 OpenAI 接口，支持 OpenClaw、Cherry Studio、Cursor、Bob 翻译、沉浸式翻译等所有支持自定义 baseUrl 的工具。</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-q">充值余额会过期吗？</div>
+                <div class="faq-a">按量充值余额永不过期，用多少扣多少，随时可查余额。</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-q">付款后多久到账？</div>
+                <div class="faq-a">支付宝在线支付，付款成功后余额自动秒到，无需等待人工处理。</div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-q">Key 格式是什么？可以自己生成吗？</div>
+                <div class="faq-a">前端自动生成的是 sk-zq- 开头；在后台创建的 token 是 sk- 开头 + 48位字母数字。两种都支持查询余额和使用 API。</div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="cta">
+        <div class="container">
+            <h2>现在就开始用</h2>
+            <p>生成 Key，在线支付，余额秒到，立刻可用</p>
+            <a href="#recharge" class="cta-btn">去充值 →</a>
+        </div>
+    </section>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-title">🦞 ZqClaw 智维盘</div>
+                    <p style="color: #aaa; font-size: 14px;">基于 OpenClaw 的 U 盘 AI 助手。<br>插上就能用，双击就安装。</p>
+                </div>
+                <div>
+                    <div class="footer-title">资源</div>
+                    <ul class="footer-links">
+                        <li><a href="tutorial.html">完整教程</a></li>
+                        <li><a href="cloud.html">云服务</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw" target="_blank">GitHub</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/releases" target="_blank">下载</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="footer-title">联系我们</div>
+                    <ul class="footer-links">
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/issues" target="_blank">问题反馈</a></li>
+                        <li><a href="https://github.com/mjxdinfo/zqclaw/discussions" target="_blank">讨论交流</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 ZqClaw 智维盘 · 基于 <a href="https://github.com/openclaw/openclaw" style="color: #ff6b35;" target="_blank">OpenClaw</a> · MIT License</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

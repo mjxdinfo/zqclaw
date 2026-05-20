@@ -451,6 +451,12 @@ setup_model() {
     local api_key=${2:-""}
     
     if [ -z "$api_key" ]; then
+        # 非交互模式（管道/重定向）直接跳过
+        if [ ! -t 0 ]; then
+            echo -e "  ${DIM}管道模式，跳过模型配置${NC}"
+            echo -e "  ${DIM}安装后可运行 openclaw setup 配置${NC}"
+            return 0
+        fi
         echo -n "  请输入 DeepSeek API Key (留空跳过): "
         read -r api_key
     fi

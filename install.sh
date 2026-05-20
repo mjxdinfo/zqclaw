@@ -558,6 +558,25 @@ show_complete() {
     # 生成启动脚本（设置正确的环境变量）
     cat > "$ZQCLAW_DIR/start.sh" << 'STARTEOF'
 #!/bin/bash
+# ZqClaw 启动脚本
+ZQCLAW_DIR="$HOME/.zqclaw"
+NODE_DIR="node-linux-x64"
+CORE_DIR="$HOME/.zqclaw/core"
+
+# 统一目录结构
+if [ -L "$HOME/.openclaw" ]; then
+    TARGET=$(readlink -f "$HOME/.openclaw")
+    if [ "$TARGET" != "$HOME/.zqclaw/.openclaw" ]; then
+        ln -sf "$HOME/.zqclaw/.openclaw" "$HOME/.openclaw"
+    fi
+fi
+
+# 使用安装目录中的 openclaw
+cd "$CORE_DIR"
+export PATH="$HOME/.zqclaw/runtime/$NODE_DIR/bin:$PATH"
+exec "$HOME/.zqclaw/runtime/$NODE_DIR/bin/node" "$CORE_DIR/node_modules/openclaw/openclaw.mjs" gateway run
+
+#!/bin/bash
 # 统一目录结构
 if [ -L "$HOME/.openclaw" ]; then
     TARGET=$(readlink -f "$HOME/.openclaw")
@@ -570,7 +589,6 @@ fi
 cd "$ZQCLAW_DIR/core"
 export PATH="$ZQCLAW_DIR/runtime/$NODE_DIR/bin:$PATH"
 exec "$ZQCLAW_DIR/runtime/$NODE_DIR/bin/node" "$CORE_DIR/node_modules/openclaw/openclaw.mjs" gateway run
-STARTEOF
     chmod +x "$ZQCLAW_DIR/start.sh"
     echo "  工具脚本: $ZQCLAW_DIR/start.sh"
     

@@ -4,6 +4,11 @@
 #    or: powershell -ExecutionPolicy Bypass -File install.ps1
 # ============================================================
 
+# --- TLS 1.2: Required for HTTPS on older Windows ---
+try {
+    [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
+} catch {}
+
 # --- Encoding: must run BEFORE any output ---
 Set-ExecutionPolicy Bypass -Scope Process -Force -ErrorAction SilentlyContinue
 try {

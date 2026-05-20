@@ -539,6 +539,13 @@ show_complete() {
         fi
     done
     
+    # 创建符号链接，统一目录结构
+    if [ ! -e "$HOME/.openclaw" ]; then
+        mkdir -p "$ZQCLAW_DIR/.openclaw"
+        ln -sf "$ZQCLAW_DIR/.openclaw" "$HOME/.openclaw"
+        echo -e "  ${GREEN}✓${NC} 目录统一: ~/.openclaw -> $ZQCLAW_DIR/.openclaw"
+    fi
+    
     if [ -n "$openclaw_cmd" ]; then
         echo "  启动命令: ${CYAN}openclaw gateway run${NC}"
     else
@@ -548,23 +555,35 @@ show_complete() {
     echo "  浏览器会自动打开配置页面"
     echo ""
     
-    # 生成启动脚本
-    cat > "$ZQCLAW_DIR/start.sh" << STARTEOF
+    # 生成启动脚本（设置正确的环境变量）
+    cat > "$ZQCLAW_DIR/start.sh" << 'STARTEOF'
 #!/bin/bash
-$(dirname "$openclaw_cmd")/openclaw gateway run
+# 统一目录结构
+if [ -L "$HOME/.openclaw" ]; then
+    TARGET=$(readlink -f "$HOME/.openclaw")
+    if [ "$TARGET" != "$ZQCLAW_DIR/.openclaw" ]; then
+        ln -sf "$ZQCLAW_DIR/.openclaw" "$HOME/.openclaw"
+    fi
+fi
+
+# 使用安装目录中的 openclaw
+cd "$ZQCLAW_DIR/core"
+export PATH="$ZQCLAW_DIR/runtime/$NODE_DIR/bin:$PATH"
+exec "$ZQCLAW_DIR/runtime/$NODE_DIR/bin/node" "$CORE_DIR/node_modules/openclaw/openclaw.mjs" gateway run
 STARTEOF
     chmod +x "$ZQCLAW_DIR/start.sh"
     echo "  工具脚本: $ZQCLAW_DIR/start.sh"
     
     # 生成卸载脚本
-    cat > "$ZQCLAW_DIR/uninstall.sh" << UNINSTALLEOF
+    cat > "$ZQCLAW_DIR/uninstall.sh" << 'UNINSTALLEOF'
 #!/bin/bash
 echo "  将删除: $ZQCLAW_DIR"
 read -p "  确认卸载？(y/n) [n]: " CONFIRM
-if [ "\$CONFIRM" = "y" ] || [ "\$CONFIRM" = "Y" ]; then
+if [ "$CONFIRM" = "y" ] || [ "$CONFIRM" = "Y" ]; then
     rm -rf "$ZQCLAW_DIR"
     rm -f /usr/local/bin/openclaw 2>/dev/null
-    rm -f "\$HOME/bin/openclaw" 2>/dev/null
+    rm -f "$HOME/bin/openclaw" 2>/dev/null
+    rm -f "$HOME/.openclaw" 2>/dev/null
     echo "  卸载完成"
 fi
 UNINSTALLEOF
@@ -574,6 +593,8 @@ UNINSTALLEOF
     echo ""
     echo -e "${DIM}提示: 如需重新安装，删除 $ZQCLAW_DIR 目录即可${NC}"
 }
+
+
 
 # ============================================================
 # 主流程

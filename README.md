@@ -1,0 +1,564 @@
+# 🦞 ZqClaw（智维盘）
+
+> **智维盘 — 全球首个 U 盘里运行的 AI 助手 | The world's first AI assistant that runs from a USB drive**
+> **制作「插上就能用」的 AI 助手 U 盘 — 教程与源代码**
+> **Build a plug-and-play AI assistant USB drive — Tutorial & Source Code**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+[中文](#中文) | [English](#english) | [📖 完整教程](https://zqclaw.org/tutorial.html)
+
+---
+
+<a id="中文"></a>
+
+## 中文
+
+### 这是什么
+
+ZqClaw（智维盘）是一个**制作教程 + 全套源代码**，教你把 [OpenClaw](https://github.com/openclaw/openclaw)（开源 AI 助手框架）做成 U 盘——插上任意电脑，双击就能用 AI。为什么叫智维盘？ZqClaw = USB + Claw（智维钳），U 盘 + AI = 智维盘。
+
+代码库本身就是 U 盘的文件骨架，运行 `setup.sh` 补齐大依赖后，整个 `portable/` 目录直接拷贝到 U 盘即可。
+
+> 📖 **[完整教程](https://zqclaw.org/tutorial.html)** — 从零开始的手工安装指南、模型配置、聊天平台接入，小白也能看懂。
+
+### 🔗 内置智维盘云：开箱即用
+
+每个 ZqClaw 实例首次启动会**自动**根据当前 U 盘 / 硬盘的指纹生成一个 `sk-...` 形式的智维盘云 apiKey，并写入 `data/.openclaw/openclaw.json`。打开 Config.html 就能看到这张「已绑定智维盘云」横幅（指纹来源、Key、余额）。
+
+- **不送 token**：余额初始为 0，需自行充值（[zqclaw.org/cloud.html](https://zqclaw.org/cloud.html)）
+- **指纹规则**：
+  - 从 U 盘根目录启动 → 绑定该 U 盘的硬件指纹（USB Serial + PNPDeviceID）
+  - 从硬盘启动（电脑安装版 / Electron App）→ 绑定主板 + 系统盘指纹
+  - Mac/Linux 走 Hardware UUID / `/etc/machine-id` + 启动盘 UUID
+- **换机 / 换盘**：换 U 盘或换电脑后，新的指纹会生成新的 Key；旧 Key 的余额仍归属原指纹（在 Config.html 点「解绑」可触发重新绑定）
+- **隐私**：指纹只用于本地生成 Key，不上传，无登录
+
+### 一键安装（推荐）
+
+不需要 U 盘，一行命令直接装到电脑：
+
+```bash
+# Mac / Linux
+curl -fsSL https://zqclaw.org/install.sh | bash
+
+# Windows (PowerShell 管理员)
+irm https://zqclaw.org/install.ps1 | iex
+```
+
+自动完成: Node.js 下载 → OpenClaw 安装 → 10 个中国技能 → 模型配置 → 启动脚本生成。全程国内镜像，无需翻墙。
+
+详见 [`install/README.md`](install/README.md)。
+
+### 快速开始：制作便携版 U 盘
+
+```bash
+# 1. 克隆代码
+git clone https://github.com/dongsheng123132/zqclaw.git
+
+# 2. 补齐大依赖（Node.js + OpenClaw，国内镜像，约 1 分钟）
+cd zqclaw/portable && bash setup.sh
+
+# 3. 拷贝到 U 盘
+cp -R portable/ /Volumes/你的U盘/ZqClaw/   # Mac
+# 或 Windows 资源管理器直接拖过去
+```
+
+**完成！** 插上 U 盘，双击启动脚本就能用。
+
+### U 盘功能一览
+
+| 功能 | Mac | Windows |
+|------|-----|---------|
+| **免安装运行** | `Mac-Start.command` | `Windows-Start.bat` |
+| **功能菜单** | `Mac-Menu.command` | `Windows-Menu.bat` |
+| **安装到电脑** | `Mac-Install.command` | `Windows-Install.bat` |
+| **首次配置** | `Config.html` | `Config.html` |
+
+### U 盘文件结构
+
+```
+ZqClaw/                          ← 整个拷到 U 盘
+├── Mac-Start.command             Mac 免安装运行
+├── Mac-Menu.command              Mac 功能菜单
+├── Mac-Install.command           安装到 Mac
+├── Windows-Start.bat             Windows 免安装运行
+├── Windows-Menu.bat              Windows 功能菜单
+├── Windows-Install.bat           安装到 Windows
+├── Config.html                   首次配置页面
+├── setup.sh                      补齐依赖（开发者用）
+├── app/                          ← 大依赖（setup.sh 下载，不进 git）
+│   ├── core/                        OpenClaw + QQ 插件
+│   └── runtime/
+│       ├── node-mac-arm64/          Mac Apple Silicon
+│       ├── node-mac-x64/           Mac Intel
+│       └── node-win-x64/           Windows 64-bit
+└── data/                         ← 用户数据（不进 git）
+    ├── .openclaw/                   配置文件
+    ├── memory/                      AI 记忆
+    └── backups/                     备份
+```
+
+### Linux 可启动版
+
+连操作系统都没有？没关系。可启动版可以让任意电脑从 U 盘直接启动 Ubuntu + AI：
+
+- 本仓库内：[`bootable/`](bootable/) 目录（与其他模块完全独立，互不影响）
+- 独立仓库：[zqclaw-linux](https://github.com/dongsheng123132/zqclaw-linux)（内容一致，方便单独克隆）
+
+基于 Ventoy + Ubuntu 24.04 LTS + 持久化存储，在 Windows 上运行 4 步 PowerShell 脚本即可制作。详见 [`bootable/README.md`](bootable/README.md)。
+
+### 桌面安装版（Electron App）
+
+除了 U 盘便携版，还有桌面 App 版本：
+
+```bash
+cd zqclaw-app
+bash setup.sh            # 一键安装开发环境（国内镜像）
+npm run dev              # 开发模式运行
+npm run build:mac-arm64  # 打包 → release/*.dmg
+npm run build:win        # 打包 → release/*.exe
+```
+
+### 直接下载发行版
+
+[GitHub Releases](https://github.com/dongsheng123132/zqclaw/releases) 提供四种打包好的产物：
+
+- `zqclaw-portable-windows-vX.Y.Z.zip` — Windows 便携版（解压即用）
+- `zqclaw-portable-mac-vX.Y.Z.zip` — Mac 便携版
+- `ZqClaw Setup vX.Y.Z.exe` — Windows 桌面安装包
+- `ZqClaw-vX.Y.Z-arm64.dmg` — Mac 桌面安装包
+
+> ⚠️ 安装包未签名：
+> - **Windows**：双击 `.exe` 时 SmartScreen 会拦，点「更多信息」→「仍要运行」
+> - **Mac**：首次启动如被 Gatekeeper 拦，执行 `xattr -rd com.apple.quarantine /Applications/ZqClaw.app` 或在 Finder 里右键→打开
+
+### 支持的 AI 模型
+
+**国产模型（无需翻墙）：**
+
+| 模型 | 推荐场景 |
+|------|----------|
+| DeepSeek | 编程首选，极便宜 |
+| Kimi K2.5 | 长文档，256K 上下文 |
+| 通义千问 Qwen | 免费额度大 |
+| 智谱 GLM | 学术场景 |
+| MiniMax | 语音多模态 |
+| 豆包 Doubao | 火山引擎 |
+
+**国际模型：** Claude · GPT · Gemini（需翻墙或中转）
+
+### 支持的聊天平台
+
+| 平台 | 状态 | 说明 |
+|------|------|------|
+| QQ | ✅ 已预装 | 输入 AppID + Secret 即可 |
+| 飞书 | ✅ 内置 | 企业首选 |
+| Telegram | ✅ 内置 | 海外推荐 |
+| WhatsApp | ✅ 内置 | Baileys 协议 |
+| Discord | ✅ 内置 | — |
+| 微信 | ✅ 社区插件 | iPad 协议 |
+
+### 国内镜像
+
+所有脚本默认走国内镜像，无需翻墙：
+
+| 资源 | 镜像 |
+|------|------|
+| npm 包 | `registry.npmmirror.com` |
+| Node.js | `npmmirror.com/mirrors/node` |
+| Electron | `npmmirror.com/mirrors/electron` |
+
+### 开发 & 贡献
+
+```bash
+git clone https://github.com/dongsheng123132/zqclaw.git
+cd zqclaw/portable && bash setup.sh
+bash Mac-Start.command   # Mac 测试
+```
+
+**平台支持：**
+
+| 平台 | 状态 | 说明 |
+|------|------|------|
+| Mac Apple Silicon (M1-M4) | ✅ | 便携版 + 桌面版 |
+| Mac Intel (x64) | ✅ | 便携版 + 桌面版 |
+| Windows x64 | 🚧 开发中 | 便携版 + 桌面版 |
+| Linux x64（可启动 U 盘） | ✅ | [`bootable/`](bootable/) 目录 |
+
+欢迎 PR！特别需要：Windows 脚本完善、教程翻译。
+
+### 🦞 寻找技术伙伴
+
+ZqClaw 是一个快速成长的开源项目，目前已有不少商业合作机会。
+
+我们正在寻找：
+- **技术伙伴** — 全栈 / Node.js / Electron / 脚本自动化
+- **资源合作** — 渠道、内容、社区运营
+
+如果你对 AI 工具的落地和商业化感兴趣，欢迎联系：
+
+- 微信: hecare888
+- Telegram: [@dsds8848](https://t.me/dsds8848)
+- Twitter/X: [@Bitplus888](https://x.com/Bitplus888)
+- Email: [hefangsheng@gmail.com](mailto:hefangsheng@gmail.com)
+- GitHub: [@dongsheng123132](https://github.com/dongsheng123132)
+- 官网: [zqclaw.org](https://zqclaw.org)
+
+### FAQ
+
+**Q: 需要翻墙吗？**
+不需要。安装和运行全程使用国内镜像，国产模型 API 直连。
+
+**Q: U 盘需要多大？**
+4GB+（完整约 2.3GB）。
+
+**Q: 能分发吗？**
+MIT 协议，随便复制分发。
+
+**Q: Mac 提示"未验证的开发者"？**
+右键脚本 → 打开。
+
+**Q: setup.bat / setup.sh 执行失败，提示模块找不到？**
+通常是 npm install 过程中网络中断导致 `node_modules` 不完整。解决步骤：
+1. 删除不完整的依赖：`rmdir /s /q portable\app\core\node_modules`（Windows）或 `rm -rf portable/app/core/node_modules`（Mac）
+2. 切换淘宝镜像重新安装：`cd portable/app/core && npm install --registry=https://registry.npmmirror.com`
+
+**Q: 系统已有 Node.js v24，安装失败？**
+Node.js v24 是最新开发版，部分依赖尚不兼容。需要 **v20 或 v22 LTS**。删除已下载的 runtime 目录后重新运行 setup，它会自动下载内置的 Node v22：
+```bash
+# Windows
+rmdir /s /q portable\app\runtime\node-win-x64
+setup.bat
+
+# Mac
+rm -rf portable/app/runtime/node-mac-arm64
+bash setup.sh
+```
+
+**Q: Mac 上提示 `.toSorted is not a function`？**
+系统旧版 Node.js 被检测到并跳过了内置版本下载，但旧版 Node 不支持 `.toSorted()`（需要 v20+）。删除 runtime 目录让脚本重新下载内置 Node v22：
+```bash
+rm -rf portable/app/runtime/node-mac-arm64
+bash setup.sh
+```
+
+**Q: 如何同时配置多个 AI 模型并切换？**
+支持同时配置多个 provider！打开 `Config.html` → 在 Providers 区域点击「添加」，逐个填入各模型的 API Key 和地址（如 DeepSeek、Kimi、通义等）→ 保存后，在聊天界面左上角下拉菜单随时切换。配置持久保存在 U 盘上。
+
+**Q: U 盘安装后无法创建文件 / 写入失败？**
+两种可能：① U 盘侧面有物理写保护开关，拨到解锁位置；② U 盘格式不兼容，建议格式化为 **exFAT**（Mac/Windows/Linux 三端均支持读写）。
+
+**Q: 从 Ubuntu 向 U 盘复制时符号链接丢失？**
+`node_modules/.bin/` 下有大量符号链接，FAT32/exFAT 在直接 `cp -R` 时会跳过。用 `rsync -aL` 可将符号链接展开为真实文件：
+```bash
+rsync -aL --progress portable/ /media/YOUR_USB/ZqClaw/
+```
+
+**Q: QQbot 报错 `Unknown channel: qqbot`？**
+Bundle 里的 `@sliverp/qqbot` 是未编译的 TypeScript 源码，需要先编译：
+```bash
+cd portable/app/core/node_modules/@sliverp/qqbot
+npm install && npm run build
+```
+正式 Release 包已修复此问题，建议从 [Releases](https://github.com/dongsheng123132/zqclaw/releases) 下载最新版。
+
+### 联系 & 合作
+
+<img src="assets/wechat-qr.jpg" width="220" alt="微信二维码 — 贺去病 ai 工作室" align="right" />
+
+- 微信: hecare888（或扫右侧二维码）
+- Telegram: [@dsds8848](https://t.me/dsds8848)
+- Twitter/X: [@Bitplus888](https://x.com/Bitplus888)
+- Email: [hefangsheng@gmail.com](mailto:hefangsheng@gmail.com)
+- GitHub: [@dongsheng123132](https://github.com/dongsheng123132)
+- 官网: [zqclaw.org](https://zqclaw.org)
+
+**🤝 招募代理 / 带货合作**
+
+智维盘 3.0 体验极佳，退货率极低，售后由我们负责——你只管卖货：
+
+- **抖店 / 直播带货**：提供最高佣金比例，产品已在多个直播间验证转化
+- **代理分销**：买断或按单分润均可谈，支持定制版本
+- **技术合作**：有开发能力者欢迎深度合作
+
+有意向请微信联系（备注「代理合作」优先处理）。
+
+---
+
+<a id="english"></a>
+
+## English
+
+### What is this
+
+ZqClaw (aka "智维盘" / "Xia Pan" in Chinese, meaning "Claw Drive") is a **tutorial + complete source code** for building an [OpenClaw](https://github.com/openclaw/openclaw) (open-source AI assistant framework) USB drive — plug it into any computer, double-click, and start using AI.
+
+The codebase itself is the USB file skeleton. Run `setup.sh` to download large dependencies, then copy the entire `portable/` directory to a USB drive.
+
+> 📖 **[Full Tutorial](https://zqclaw.org/tutorial.html)** — Step-by-step manual installation, model setup, chat platform integration.
+
+### One-Line Install (Recommended)
+
+No USB needed — install directly to your computer:
+
+```bash
+# Mac / Linux
+curl -fsSL https://zqclaw.org/install.sh | bash
+
+# Windows (PowerShell as Admin)
+irm https://zqclaw.org/install.ps1 | iex
+```
+
+Automatically downloads Node.js, installs OpenClaw, configures 10 Chinese-optimized skills, and sets up your AI model. All downloads use China mirrors.
+
+See [`install/README.md`](install/README.md) for details.
+
+### Quick Start: Build a Portable USB
+
+```bash
+# 1. Clone
+git clone https://github.com/dongsheng123132/zqclaw.git
+
+# 2. Download dependencies (Node.js + OpenClaw, ~1 min)
+cd zqclaw/portable && bash setup.sh
+
+# 3. Copy to USB drive
+cp -R portable/ /Volumes/YOUR_USB/ZqClaw/   # Mac
+# Or drag & drop on Windows
+```
+
+**Done!** Plug in the USB, double-click the start script, and you're running AI.
+
+### USB Features
+
+| Feature | Mac | Windows |
+|---------|-----|---------|
+| **Run (no install)** | `Mac-Start.command` | `Windows-Start.bat` |
+| **Menu** | `Mac-Menu.command` | `Windows-Menu.bat` |
+| **Install to PC** | `Mac-Install.command` | `Windows-Install.bat` |
+| **First-time config** | `Config.html` | `Config.html` |
+
+### File Structure
+
+```
+ZqClaw/                          ← Copy entire folder to USB
+├── Mac-Start.command             Mac launcher
+├── Mac-Menu.command              Mac menu
+├── Mac-Install.command           Install to Mac
+├── Windows-Start.bat             Windows launcher
+├── Windows-Menu.bat              Windows menu
+├── Windows-Install.bat           Install to Windows
+├── Config.html                   First-time config page
+├── setup.sh                      Download dependencies (dev use)
+├── app/                          ← Large deps (downloaded by setup.sh, not in git)
+│   ├── core/                        OpenClaw + QQ plugin
+│   └── runtime/
+│       ├── node-mac-arm64/          Mac Apple Silicon
+│       ├── node-mac-x64/           Mac Intel
+│       └── node-win-x64/           Windows 64-bit
+└── data/                         ← User data (not in git)
+    ├── .openclaw/                   Config file
+    ├── memory/                      AI memory
+    └── backups/                     Backups
+```
+
+### Linux Bootable USB
+
+No operating system? No problem. Boot any computer from USB into Ubuntu + AI:
+
+- In this repo: [`bootable/`](bootable/) directory (fully independent from other modules)
+- Standalone repo: [zqclaw-linux](https://github.com/dongsheng123132/zqclaw-linux) (same content, easier to clone separately)
+
+Based on Ventoy + Ubuntu 24.04 LTS + persistence. 4-step PowerShell scripts on Windows. See [`bootable/README.md`](bootable/README.md) for details.
+
+### Desktop App (Electron)
+
+```bash
+cd zqclaw-app
+bash setup.sh            # One-click dev setup (China mirrors)
+npm run dev              # Dev mode
+npm run build:mac-arm64  # Build → release/*.dmg
+npm run build:win        # Build → release/*.exe
+```
+
+### Supported AI Models
+
+**Chinese models (no VPN needed):**
+
+| Model | Best for |
+|-------|----------|
+| DeepSeek | Coding, extremely cheap |
+| Kimi K2.5 | Long documents, 256K context |
+| Qwen | Large free tier |
+| GLM (Zhipu) | Academic use |
+| MiniMax | Voice & multimodal |
+| Doubao | Volcengine ecosystem |
+
+**International models:** Claude · GPT · Gemini (VPN or relay required in China)
+
+### Supported Chat Platforms
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| QQ | ✅ Pre-installed | Enter AppID + Secret |
+| Feishu (Lark) | ✅ Built-in | Enterprise favorite |
+| Telegram | ✅ Built-in | International |
+| WhatsApp | ✅ Built-in | Baileys protocol |
+| Discord | ✅ Built-in | — |
+| WeChat | ✅ Community plugin | iPad protocol |
+
+### China Mirrors
+
+All scripts use China mirrors by default — no VPN needed:
+
+| Resource | Mirror |
+|----------|--------|
+| npm packages | `registry.npmmirror.com` |
+| Node.js | `npmmirror.com/mirrors/node` |
+| Electron | `npmmirror.com/mirrors/electron` |
+
+### Development & Contributing
+
+```bash
+git clone https://github.com/dongsheng123132/zqclaw.git
+cd zqclaw/portable && bash setup.sh
+bash Mac-Start.command   # Test on Mac
+```
+
+**Platform Support:**
+
+| Platform | Status | Notes |
+|----------|--------|-------|
+| Mac Apple Silicon (M1-M4) | ✅ | Portable + Desktop |
+| Mac Intel (x64) | ✅ | Portable + Desktop |
+| Windows x64 | 🚧 In progress | Portable + Desktop |
+| Linux x64 (Bootable USB) | ✅ | [`bootable/`](bootable/) directory |
+
+PRs welcome! Especially: Windows scripts, documentation.
+
+### 🔧 Professional Services / 专业服务
+
+Need help? We offer remote support and custom development:
+
+| Service | Description | Price |
+|---------|-------------|-------|
+| **Remote Installation** | We remotely install OpenClaw + skills + model config for you | Free |
+| **Troubleshooting** | Startup failures, port conflicts, network issues | From ¥50 |
+| **Model Tuning** | API key setup, model switching, prompt optimization | From ¥50 |
+| **Custom Development** | Custom skills, enterprise private deployment, QQ/WeChat/Feishu bot integration | From ¥200 |
+| **USB Green Edition** | Pre-built portable USB with your custom skills & models | From ¥100 |
+
+**One-click remote support** — run one command, we connect and fix it:
+
+```bash
+# Mac / Linux
+curl -fsSL https://zqclaw.org/remote.sh | bash
+
+# Windows (Admin PowerShell)
+irm https://zqclaw.org/remote.ps1 | iex
+```
+
+WeChat: **hecare888** (备注「ZqClaw 远程」优先处理)
+
+👉 [View full service details / 查看完整服务详情](https://zqclaw.org/guide.html#remote-support)
+
+### 🦞 Looking for Partners
+
+ZqClaw is a fast-growing open-source project with real commercial opportunities.
+
+We're looking for:
+- **Technical partners** — Full-stack / Node.js / Electron / scripting
+- **Resource partners** — Distribution, content, community
+
+If you're interested in AI tooling and commercialization, let's talk:
+
+- Telegram: [@dsds8848](https://t.me/dsds8848)
+- Twitter/X: [@Bitplus888](https://x.com/Bitplus888)
+- Email: [hefangsheng@gmail.com](mailto:hefangsheng@gmail.com)
+- GitHub: [@dongsheng123132](https://github.com/dongsheng123132)
+- WeChat: hecare888
+- Website: [zqclaw.org](https://zqclaw.org)
+
+### FAQ
+
+**Q: Do I need a VPN?**
+No. All downloads use China mirrors. Chinese AI model APIs work directly.
+
+**Q: How big should the USB drive be?**
+4GB+ (~2.3GB full).
+
+**Q: Can I redistribute?**
+MIT license — copy and share freely.
+
+**Q: Mac says "unverified developer"?**
+Right-click the script → Open.
+
+**Q: setup.bat / setup.sh fails with "module not found"?**
+Usually caused by a network interruption during `npm install`, leaving `node_modules` incomplete. Fix:
+1. Delete incomplete dependencies: `rmdir /s /q portable\app\core\node_modules` (Windows) or `rm -rf portable/app/core/node_modules` (Mac)
+2. Reinstall using China mirror: `cd portable/app/core && npm install --registry=https://registry.npmmirror.com`
+
+**Q: Already have Node.js v24 and installation fails?**
+Node.js v24 is a dev release — some dependencies aren't compatible yet. You need **v20 or v22 LTS**. Delete the runtime folder to force a fresh download of the bundled Node v22:
+```bash
+# Windows
+rmdir /s /q portable\app\runtime\node-win-x64
+setup.bat
+
+# Mac
+rm -rf portable/app/runtime/node-mac-arm64
+bash setup.sh
+```
+
+**Q: Mac shows `.toSorted is not a function`?**
+Your system Node.js was detected and the bundled version was skipped, but the system version is too old (needs v20+). Delete the runtime folder to re-download the bundled Node v22:
+```bash
+rm -rf portable/app/runtime/node-mac-arm64
+bash setup.sh
+```
+
+**Q: How do I use multiple AI models / providers?**
+Multiple providers are supported! Open `Config.html` → click "Add" in the Providers section → enter API Key and endpoint for each model (DeepSeek, Kimi, Qwen, etc.) → save. Switch between models via the dropdown in the chat interface. Config is saved persistently on the USB drive.
+
+**Q: USB drive shows "cannot create file" / write errors?**
+Two possibilities: ① The USB drive has a physical write-protect switch on the side — slide it to unlock; ② Format incompatibility — format the drive as **exFAT** (supported on Mac/Windows/Linux).
+
+**Q: Symlinks missing when copying from Ubuntu to USB?**
+`node_modules/.bin/` contains many symlinks that get skipped during direct `cp -R`. Use `rsync -aL` to expand symlinks into real files:
+```bash
+rsync -aL --progress portable/ /media/YOUR_USB/ZqClaw/
+```
+
+**Q: QQbot error: `Unknown channel: qqbot`?**
+The bundled `@sliverp/qqbot` is uncompiled TypeScript source. Compile it manually:
+```bash
+cd portable/app/core/node_modules/@sliverp/qqbot
+npm install && npm run build
+```
+This is fixed in the latest [Release](https://github.com/dongsheng123132/zqclaw/releases) — downloading the pre-built release is recommended.
+
+### Contact & Partnership
+
+<img src="assets/wechat-qr.jpg" width="220" alt="WeChat QR — He Qubing AI Studio" align="right" />
+
+- WeChat: hecare888 (or scan QR on the right)
+- Telegram: [@dsds8848](https://t.me/dsds8848)
+- Twitter/X: [@Bitplus888](https://x.com/Bitplus888)
+- Email: [hefangsheng@gmail.com](mailto:hefangsheng@gmail.com)
+- GitHub: [@dongsheng123132](https://github.com/dongsheng123132)
+- Website: [zqclaw.org](https://zqclaw.org)
+
+**🤝 Reseller / Affiliate Program**
+
+ZqClaw 3.0 delivers excellent user experience with very low return rates. We handle all after-sales support — you focus on selling:
+
+- **Live commerce / TikTok shop**: Top commission rates, proven conversion in live streams
+- **Reseller / distribution**: Revenue share or wholesale, custom branded versions available
+- **Technical partnership**: Deep collaboration welcome for developers
+
+Interested? WeChat hecare888 (mention "partnership" for priority response).
+
+---
+
+**Made with 🦞 by [贺去病 ai 工作室](https://github.com/dongsheng123132)**

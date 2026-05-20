@@ -1,0 +1,54 @@
+# ── Runtime dependencies (too large for git, download on build) ──
+portable/app/
+portable/data/
+zqclaw-app/node_modules/
+zqclaw-app/release/
+
+# ── Non-dev assets (stored locally, not in repo) ──
+archive/
+reference/
+releases/
+toolkit/
+marketing/
+social-assets/
+
+# ── Build cache & temp ──
+.download-cache/
+*.dmg
+*.exe
+!website/downloads/agent.exe
+*.blockmap
+builder-debug.yml
+
+# ── OpenClaw source downloads ──
+openclaw-2026.3.7/
+openclaw-2026.3.7.zip
+
+# ── OS files ──
+.DS_Store
+Thumbs.db
+
+# ── Claude workspace ──
+.claude/
+
+# ── zqclaw-app runtime binaries (download on build) ──
+zqclaw-app/resources/runtime/
+
+# ── Bootable USB build artifacts (scripts are tracked, downloads are not) ──
+bootable/.download-cache/
+
+# ── Install module cache ──
+install/.download-cache/
+
+# ── USB release (runtime + data downloaded on build) ──
+usb-release/runtime/
+usb-release/core/node_modules/
+usb-release/data/
+usb-release/toolkit/*.pkg
+usb-release/toolkit/*.msi
+usb-release/toolkit/*.tar.gz
+usb-release/toolkit/*.zip
+
+# ── Environment variables ──
+.env
+.env.*

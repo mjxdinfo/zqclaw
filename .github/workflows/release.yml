@@ -1,0 +1,283 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g. v2.1.0). Leave empty to use the most recent tag.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  portable-windows-full:
+    name: Portable Windows full bundle (Node + OpenClaw pre-installed)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Stage portable directory
+        run: |
+          mkdir -p dist
+          tag_name="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          stage_dir="dist/zqclaw-portable-windows-${tag_name}"
+          mkdir -p "$stage_dir"
+          cp -R portable/. "$stage_dir/"
+          cp OPENCLAW_VERSION "$stage_dir/OPENCLAW_VERSION"
+          rm -rf "$stage_dir/data/logs" 2>/dev/null || true
+
+      - name: Pre-install Node.js (Windows) and OpenClaw deps
+        run: |
+          tag_name="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          # Absolute paths so `cd "$core_dir"` later doesn't break `du`/`find`
+          stage_dir="$(pwd)/dist/zqclaw-portable-windows-${tag_name}"
+          openclaw_version=$(tr -d '[:space:]' < OPENCLAW_VERSION)
+          node_version="v22.22.1"
+          mirror_node="https://npmmirror.com/mirrors/node"
+          mirror_npm="https://registry.npmmirror.com"
+
+          app_dir="$stage_dir/app"
+          runtime_dir="$app_dir/runtime"
+          core_dir="$app_dir/core"
+          mkdir -p "$runtime_dir" "$core_dir"
+
+          # 1) Download Node for Windows x64 only.
+          #    Mac users: Mac-Start.command runs setup.sh on first launch which
+          #    downloads node-mac-arm64 from npmmirror.com (~30MB, ~10s in China).
+          #    Stanley pattern: ship one platform per zip, keep size reasonable.
+          win_node="$runtime_dir/node-win-x64"
+          mkdir -p "$win_node"
+          curl -fSL "$mirror_node/$node_version/node-$node_version-win-x64.zip" -o /tmp/node-win.zip
+          unzip -q /tmp/node-win.zip -d /tmp/node-win-extract
+          cp -r /tmp/node-win-extract/node-$node_version-win-x64/* "$win_node/"
+          rm -rf /tmp/node-win.zip /tmp/node-win-extract
+
+          # 2) Use linux Node to npm-install OpenClaw + bundled runtime deps
+          #    into core/node_modules — these are platform-agnostic JS, work on any OS
+          curl -fSL "$mirror_node/$node_version/node-$node_version-linux-x64.tar.xz" \
+            | tar xJ -C /tmp
+          export PATH="/tmp/node-$node_version-linux-x64/bin:$PATH"
+          node --version
+
+          cat > "$core_dir/package.json" <<PKGJSON
+          {
+            "name": "zqclaw-core",
+            "version": "1.0.0",
+            "private": true,
+            "dependencies": {
+              "openclaw": "$openclaw_version"
+            }
+          }
+          PKGJSON
+
+          # Install OpenClaw + ALL bundled runtime deps in one shot, no native scripts
+          # (--ignore-scripts skips sharp/playwright/sqlite-vec native postinstall —
+          #  those are not needed for OpenClaw gateway core path)
+          cd "$core_dir"
+          npm install \
+            --registry="$mirror_npm" \
+            --ignore-scripts \
+            --no-audit \
+            --no-fund \
+            --omit=dev
+
+          # Note: do NOT pre-install OpenClaw's bundled runtime deps.
+          # First v2.1.3 attempt did this and the zip ballooned to 540MB
+          # because clawdbot drags in @node-llama-cpp (701MB local LLM
+          # binaries). Stanley's v2026.5.2 package only installs `openclaw`
+          # main package (153MB total) and lets OpenClaw lazy-stage the
+          # subset of bundled deps it actually needs at runtime.
+
+          # 5) Install QQ plugin
+          npm install @sliverp/qqbot@latest \
+            --registry="$mirror_npm" \
+            --ignore-scripts \
+            --no-audit \
+            --no-fund || true
+
+          # 6) Copy China-optimized skills if present
+          skills_cn="$stage_dir/skills-cn"
+          skills_target="$core_dir/node_modules/openclaw/skills"
+          if [ -d "$skills_cn" ] && [ -d "$skills_target" ]; then
+            for skill_dir in "$skills_cn"/*/; do
+              skill_name=$(basename "$skill_dir")
+              [ ! -d "$skills_target/$skill_name" ] && cp -R "$skill_dir" "$skills_target/$skill_name"
+            done
+          fi
+
+          # 7) Belt-and-suspenders: even though we don't pre-install bundled
+          # deps, openclaw's own dependencies might still pull large native
+          # binaries. Prune known offenders just in case.
+          echo "Before prune: $(du -sm "$core_dir/node_modules" | cut -f1) MB"
+          for big_pat in '@node-llama-cpp' 'node-llama-cpp'; do
+            find "$core_dir/node_modules" -maxdepth 3 -type d -name "$big_pat" -prune -exec rm -rf {} + 2>/dev/null || true
+          done
+          echo "After prune:  $(du -sm "$core_dir/node_modules" | cut -f1) MB"
+
+          du -sh "$stage_dir"
+          echo "Portable bundle staged: $stage_dir"
+
+      - name: Normalize line endings (CRLF for Windows scripts, LF for shell)
+        run: |
+          tag_name="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          stage_dir="dist/zqclaw-portable-windows-${tag_name}"
+          # Windows batch files MUST be CRLF — cmd.exe mis-parses LF-only files
+          find "$stage_dir" -type f \( -name '*.bat' -o -name '*.cmd' -o -name '*.ps1' \) -print0 \
+            | xargs -0 -I {} sh -c 'sed -i "s/\r$//; s/$/\r/" "{}"'
+          # Ensure shell scripts stay LF (mac/linux double-click won't run otherwise)
+          find "$stage_dir" -type f \( -name '*.sh' -o -name '*.command' -o -name '*.mjs' -o -name '*.js' \) -print0 \
+            | xargs -0 -I {} sh -c 'sed -i "s/\r$//" "{}"'
+          # Restore +x on shell entry points
+          chmod +x "$stage_dir"/*.sh "$stage_dir"/*.command 2>/dev/null || true
+
+      - name: Zip portable bundle
+        run: |
+          tag_name="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          cd dist
+          zip -qry "zqclaw-portable-windows-${tag_name}.zip" "zqclaw-portable-windows-${tag_name}"
+          ls -lh "zqclaw-portable-windows-${tag_name}.zip"
+
+      - name: Size guard (lesson from 5916ff5 — GitHub 2GB asset cap)
+        run: |
+          tag_name="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          zip_path="dist/zqclaw-portable-windows-${tag_name}.zip"
+          size_bytes=$(stat -c%s "$zip_path")
+          size_mb=$((size_bytes / 1024 / 1024))
+          echo "Portable zip size: ${size_mb} MB"
+          # Hard cap at 1500 MB to leave buffer below GitHub's 2GB single-asset limit.
+          # Inspired by StanleyChanH/openclaw-offline-package which ships ~150MB.
+          if [ "$size_mb" -gt 1500 ]; then
+            echo "::error::Portable zip is ${size_mb} MB, exceeds 1500 MB safety cap"
+            echo "Consider removing more optional deps or splitting into platform-specific zips"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-windows-full
+          path: dist/zqclaw-portable-windows-*.zip
+
+  desktop-windows:
+    name: Electron Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        shell: cmd
+        run: |
+          cd zqclaw-app
+          npm install --registry=https://registry.npmmirror.com
+
+      - name: Build Windows installer
+        shell: cmd
+        run: |
+          cd zqclaw-app
+          npm run build:win
+        env:
+          # Skip code signing — we ship unsigned. README documents the SmartScreen workaround.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows
+          path: |
+            zqclaw-app/release/*.exe
+            zqclaw-app/release/*.exe.blockmap
+
+  desktop-mac:
+    name: Electron macOS DMG
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          cd zqclaw-app
+          npm install --registry=https://registry.npmmirror.com
+
+      - name: Build macOS DMG
+        run: |
+          cd zqclaw-app
+          npm run build:mac-arm64
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-mac
+          path: |
+            zqclaw-app/release/*.dmg
+            zqclaw-app/release/*.dmg.blockmap
+
+  publish:
+    name: Publish GitHub Release
+    needs: [portable-windows-full, desktop-windows, desktop-mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            tag="${{ github.event.inputs.tag }}"
+          else
+            tag="${GITHUB_REF_NAME}"
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Read OpenClaw version
+        id: openclaw_version
+        run: |
+          version=$(tr -d '[:space:]' < OPENCLAW_VERSION)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ZqClaw ${{ steps.tag.outputs.tag }}
+          body: |
+            ## ZqClaw ${{ steps.tag.outputs.tag }}
+
+            - 内置智维盘云：首次启动自动绑定本机/U盘指纹，生成 `sk-uc-...` apiKey
+            - OpenClaw runtime: `${{ steps.openclaw_version.outputs.version }}`
+            - 充值入口：https://zqclaw.org/cloud.html
+
+            ### 下载
+
+            - **Windows 桌面版**：`ZqClaw.Setup.*.exe`（安装到电脑）或 `ZqClaw.*.exe`（免安装绿色版）
+            - **macOS 桌面版**：`ZqClaw-*-arm64.dmg`（Apple Silicon）或 `ZqClaw-*.dmg`（Intel）
+            - **Windows 便携完整版（U 盘版）**：`zqclaw-portable-windows-*.zip`（约 150-200 MB，已预装 Node.js + OpenClaw，**解压即用，零网络依赖**）
+            - **macOS 便携骨架（开发者）**：源码在 `portable/` 目录，`bash setup.sh` 自动下载 Node + OpenClaw（国内镜像约 1 分钟）
+
+            > **U 盘格式建议**：请用 **NTFS** 格式化 U 盘（NOT exFAT/FAT32）。Node.js 在 exFAT 上 IO 极慢且不支持符号链接，可能导致启动失败。
+            > Windows 下右键 U 盘 → 格式化 → 文件系统选择 NTFS。
+
+            > Windows 安装包未做代码签名，首次运行 SmartScreen 选择「仍要运行」。
+            > macOS DMG 未做公证，首次启动 `xattr -rd com.apple.quarantine /Applications/ZqClaw.app` 或右键打开。
+          files: |
+            artifacts/portable-windows-full/*
+            artifacts/desktop-windows/*
+            artifacts/desktop-mac/*
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

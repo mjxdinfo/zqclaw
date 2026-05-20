@@ -1,0 +1,9 @@
+{
+  "name": "zqclaw-core",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "openclaw": "latest",
+    "@sliverp/qqbot": "^1.5.4"
+  }
+}

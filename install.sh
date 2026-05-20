@@ -157,10 +157,13 @@ fi
 
 # Helper: invoke npm. For bundled Node we have npm-cli.js (run via node).
 # For system Node, INSTALL_NPM is the npm shell wrapper (executable).
+# Also ensures NODE_INSTALL_DIR/bin is in PATH for any child processes.
 run_npm() {
     if [ "$USE_SYSTEM_NODE" = "true" ]; then
         "$INSTALL_NPM" "$@"
     else
+        # Ensure node is in PATH for any postinstall scripts npm might run
+        export PATH="$NODE_INSTALL_DIR/bin:$PATH"
         "$INSTALL_NODE" "$INSTALL_NPM" "$@"
     fi
 }

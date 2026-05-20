@@ -210,30 +210,33 @@ fi
 # ============================================================
 echo -e "  ${BOLD}[2.5/7] 配置全局命令 ...${NC}"
 
-# 查找 openclaw 命令位置
-OPENCLAW_BIN=""
-if [ -f "$CORE_DIR/node_modules/.bin/openclaw" ]; then
-    OPENCLAW_BIN="$CORE_DIR/node_modules/.bin/openclaw"
-elif [ -f "$RUNTIME_DIR/node-linux-x64/bin/openclaw" ]; then
-    OPENCLAW_BIN="$RUNTIME_DIR/node-linux-x64/bin/openclaw"
-fi
+# 查找 openclaw 命令和 node 位置
+NODE_BIN="$RUNTIME_DIR/node-linux-x64/bin/node"
+OPENCLAW_MJS="$CORE_DIR/node_modules/openclaw/openclaw.mjs"
 
-# 创建全局链接（优先 /usr/local/bin，否则用用户 bin 目录）
-if [ -n "$OPENCLAW_BIN" ]; then
+# 创建全局 wrapper 脚本（因为 openclaw 是 .mjs 文件，需要用 node 运行）
+if [ -f "$OPENCLAW_MJS" ] && [ -f "$NODE_BIN" ]; then
     if [ -w "/usr/local/bin" ]; then
-        ln -sf "$OPENCLAW_BIN" "/usr/local/bin/openclaw"
+        # 使用 perl 替换变量，避免 heredoc 嵌套问题
+        printf '%s\n' '#!/bin/bash' 'export PATH="__NODE_PATH__:$PATH"' 'exec __NODE_PATH__ __OPENCLAW_MJS__ "$@"' > /tmp/openclaw_wrapper.txt
+        perl -i -pe "s|__NODE_PATH__|$NODE_BIN|g; s|__OPENCLAW_MJS__|$OPENCLAW_MJS|g" /tmp/openclaw_wrapper.txt
+        mv /tmp/openclaw_wrapper.txt /usr/local/bin/openclaw
+        chmod +x /usr/local/bin/openclaw
         echo -e "  ${GREEN}✓${NC} 全局命令已配置: /usr/local/bin/openclaw"
     elif [ -w "$HOME/bin" ] || mkdir -p "$HOME/bin" 2>/dev/null; then
-        ln -sf "$OPENCLAW_BIN" "$HOME/bin/openclaw"
+        printf '%s\n' '#!/bin/bash' 'export PATH="__NODE_PATH__:$PATH"' 'exec __NODE_PATH__ __OPENCLAW_MJS__ "$@"' > "$HOME/bin/openclaw"
+        perl -i -pe "s|__NODE_PATH__|$NODE_BIN|g; s|__OPENCLAW_MJS__|$OPENCLAW_MJS|g" "$HOME/bin/openclaw"
+        chmod +x "$HOME/bin/openclaw"
         export PATH="$HOME/bin:$PATH"
         echo -e "  ${GREEN}✓${NC} 全局命令已配置: $HOME/bin/openclaw"
         echo -e "  ${DIM}请将 $HOME/bin 添加到 PATH 环境变量${NC}"
     else
         echo -e "  ${YELLOW}⚠${NC} 无法创建全局链接，请手动添加到 PATH"
-        echo -e "  ${DIM}openclaw 位置: $OPENCLAW_BIN${NC}"
+        echo -e "  ${DIM}node 位置: $NODE_BIN${NC}"
+        echo -e "  ${DIM}openclaw 位置: $OPENCLAW_MJS${NC}"
     fi
 else
-    echo -e "  ${YELLOW}⚠${NC} 未找到 openclaw 命令"
+    echo -e "  ${YELLOW}⚠${NC} 未找到 openclaw 命令或 node"
 fi
 
 echo ""

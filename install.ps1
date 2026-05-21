@@ -30,6 +30,7 @@ $CONFIG_PATH = "$DATA_DIR\.openclaw\openclaw.json"
 $NODE_VERSION = "v22.16.0"
 $MIRROR = "https://registry.npmmirror.com"
 $NODE_MIRROR = "https://npmmirror.com/mirrors/node"
+$OPENCLAW_VERSION = "2026.4.29"
 
 # ---- Color helpers ----
 function Write-Green($msg) { Write-Host $msg -ForegroundColor Green }
@@ -161,14 +162,15 @@ if (-not $USE_SYSTEM_NODE) {
 Write-Host ""
 
 # ============================================================
-# Step 3: OpenClaw + QQ plugin (pre-bundled download)
+# Step 3: OpenClaw (try bundle first, fallback to npm install)
 # ============================================================
-Write-Host "  [2/6] Install OpenClaw + QQ plugin ..." -ForegroundColor White
+Write-Host "  [2/6] Install OpenClaw ..." -ForegroundColor White
 
 if (Test-Path "$CORE_DIR\node_modules\openclaw") {
     Write-Green "  [OK] OpenClaw already installed, skip"
 } else {
-    Write-Cyan "  Downloading pre-bundled package (no npm install needed)..."
+    # Try to download pre-bundled package first
+    Write-Cyan "  Trying pre-bundled package..."
     $BUNDLE_GITHUB_URL = "https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip"
     $BUNDLE_MIRRORS = @(
         "https://ghfast.top/https://github.com/mjxdinfo/zqclaw/releases/download/v1.0.0-bundle/openclaw-bundle.zip",
@@ -188,7 +190,7 @@ if (Test-Path "$CORE_DIR\node_modules\openclaw") {
             if (Test-Path $bundleZip) {
                 $fileSize = (Get-Item $bundleZip).Length
                 if ($fileSize -gt 1MB) {
-                    Write-Host "    Downloaded ($([math]::Round($fileSize/1MB,1)) MB)" -ForegroundColor DarkGray
+                    Write-Host "    Downloaded ($([math]::Round($fileSize/1MB,1)) MB)" -ForegroundColor Green
                     $downloaded = $true
                     break
                 } else {
@@ -218,36 +220,102 @@ if (Test-Path "$CORE_DIR\node_modules\openclaw") {
         }
     }
 
-    if (-not $downloaded) {
-        Write-Red "  [FAIL] Download failed! Check your network."
-        Write-Yellow "  Manual download: $BUNDLE_GITHUB_URL"
-        Write-Yellow "  Place file at: $bundleZip then re-run installer"
-        exit 1
+    if ($downloaded) {
+        Write-Host "  Extracting bundle..." -ForegroundColor Cyan
+        $tempExtract = "$env:TEMP\openclaw-bundle-extract"
+        if (Test-Path $tempExtract) { Remove-Item -Recurse -Force $tempExtract }
+        Expand-Archive -Path $bundleZip -DestinationPath $tempExtract -Force
+        New-Item -ItemType Directory -Force -Path $CORE_DIR | Out-Null
+        Copy-Item -Recurse -Force "$tempExtract\*" $CORE_DIR
+
+        Remove-Item -Force $bundleZip -ErrorAction SilentlyContinue
+        Remove-Item -Recurse -Force $tempExtract -ErrorAction SilentlyContinue
+
+        if (Test-Path "$CORE_DIR\node_modules\openclaw\openclaw.mjs") {
+            Write-Green "  [OK] OpenClaw installed (from bundle)"
+        } else {
+            Write-Yellow "  [WARN] Bundle extracted but OpenClaw not found, falling back to npm install"
+            $downloaded = $false
+        }
     }
 
-    Write-Host "  Extracting..." -ForegroundColor Cyan
-    $tempExtract = "$env:TEMP\openclaw-bundle-extract"
-    if (Test-Path $tempExtract) { Remove-Item -Recurse -Force $tempExtract }
-    Expand-Archive -Path $bundleZip -DestinationPath $tempExtract -Force
-    New-Item -ItemType Directory -Force -Path $CORE_DIR | Out-Null
-    Copy-Item -Recurse -Force "$tempExtract\*" $CORE_DIR
-
-    Remove-Item -Force $bundleZip -ErrorAction SilentlyContinue
-    Remove-Item -Recurse -Force $tempExtract -ErrorAction SilentlyContinue
-
-    if (Test-Path "$CORE_DIR\node_modules\openclaw\openclaw.mjs") {
-        Write-Green "  [OK] OpenClaw installed"
-    } else {
-        Write-Red "  [FAIL] OpenClaw install failed"
-        exit 1
+    # Fallback: npm install if bundle download failed or bundle was incomplete
+    if (-not $downloaded) {
+        Write-Cyan "  Installing OpenClaw via npm (may take a few minutes)..."
+        
+        # Create package.json
+        if (-not (Test-Path "$CORE_DIR\package.json")) {
+            @"
+{
+  "name": "zqclaw-core",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "openclaw": "$OPENCLAW_VERSION"
+  }
+}
+"@ | Out-File -FilePath "$CORE_DIR\package.json" -Encoding UTF8
+        }
+        
+        # Install via npm
+        $npmCmd = "$NODE_INSTALL_DIR\npm.cmd"
+        if (-not (Test-Path $npmCmd)) {
+            $npmCmd = "npm"
+        }
+        
+        Write-Host "    Running npm install..." -ForegroundColor DarkGray
+        $env:PATH = "$NODE_INSTALL_DIR;$env:PATH"
+        
+        Push-Location $CORE_DIR
+        try {
+            & $npmCmd install --registry="$MIRROR" --ignore-scripts --no-audit --no-fund --omit=dev 2>&1 | ForEach-Object { 
+                if ($_ -match "added|updated|removed|packages") { 
+                    Write-Host "    $_" -ForegroundColor DarkGray 
+                }
+            }
+            
+            if (Test-Path "$CORE_DIR\node_modules\openclaw\openclaw.mjs") {
+                Write-Green "  [OK] OpenClaw installed (via npm)"
+            } else {
+                Write-Red "  [FAIL] OpenClaw install failed"
+                exit 1
+            }
+        } finally {
+            Pop-Location
+        }
     }
 }
 
-# QQ plugin (included in bundle)
+Write-Host ""
+
+# ============================================================
+# QQ Plugin
+# ============================================================
+Write-Host "  [3/6] Install QQ Plugin ..." -ForegroundColor White
+
 if (Test-Path "$CORE_DIR\node_modules\@sliverp\qqbot") {
-    Write-Green "  [OK] QQ plugin included"
+    Write-Green "  [OK] QQ Plugin already installed"
 } else {
-    Write-Yellow "  [WARN] QQ plugin not included (does not affect main features)"
+    Write-Cyan "  Installing QQ Plugin..."
+    $npmCmd = "$NODE_INSTALL_DIR\npm.cmd"
+    if (-not (Test-Path $npmCmd)) {
+        $npmCmd = "npm"
+    }
+    
+    $env:PATH = "$NODE_INSTALL_DIR;$env:PATH"
+    
+    Push-Location $CORE_DIR
+    try {
+        & $npmCmd install @sliverp/qqbot@latest --registry="$MIRROR" --ignore-scripts --no-audit --no-fund 2>$null
+        if (Test-Path "$CORE_DIR\node_modules\@sliverp\qqbot") {
+            Write-Green "  [OK] QQ Plugin installed"
+        } else {
+            Write-Yellow "  [WARN] QQ Plugin install failed (does not affect main features)"
+        }
+    } catch {
+        Write-Yellow "  [WARN] QQ Plugin install failed (does not affect main features)"
+    }
+    Pop-Location
 }
 
 Write-Host ""
@@ -255,7 +323,7 @@ Write-Host ""
 # ============================================================
 # Step 4: China-optimized skills (10 skills)
 # ============================================================
-Write-Host "  [3/6] Install China skills (10) ..." -ForegroundColor White
+Write-Host "  [4/6] Install China skills (10) ..." -ForegroundColor White
 
 $SKILLS_TARGET = "$CORE_DIR\node_modules\openclaw\skills"
 if (-not (Test-Path $SKILLS_TARGET)) { New-Item -ItemType Directory -Force -Path $SKILLS_TARGET | Out-Null }
@@ -463,7 +531,7 @@ Write-Host ""
 # ============================================================
 # Step 5: Model configuration
 # ============================================================
-Write-Host "  [4/6] Configure AI model ..." -ForegroundColor White
+Write-Host "  [5/6] Configure AI model ..." -ForegroundColor White
 Write-Host ""
 
 $hasConfig = (Test-Path $CONFIG_PATH) -and (Select-String -Path $CONFIG_PATH -Pattern "apiKey" -Quiet -ErrorAction SilentlyContinue)
@@ -578,7 +646,7 @@ Write-Host ""
 # ============================================================
 # Step 6: Generate start scripts
 # ============================================================
-Write-Host "  [5/6] Generate start scripts ..." -ForegroundColor White
+Write-Host "  [6/6] Generate start scripts ..." -ForegroundColor White
 
 $startBat = @'
 @echo off
@@ -653,42 +721,6 @@ pause
 [IO.File]::WriteAllText("$ZQCLAW_DIR\uninstall.bat", $uninstallBat, (New-Object System.Text.ASCIIEncoding))
 
 Write-Green "  [OK] Remote help + uninstall tools generated"
-Write-Host ""
-
-# ============================================================
-# Step 7: Verify
-# ============================================================
-Write-Host "  [6/6] Verify installation ..." -ForegroundColor White
-Write-Host ""
-
-try {
-    $nodeVer = & $INSTALL_NODE --version 2>$null
-    Write-Green "  [OK] Node.js $nodeVer"
-} catch {
-    Write-Red "  [FAIL] Node.js"
-}
-
-if (Test-Path "$CORE_DIR\node_modules\openclaw\openclaw.mjs") {
-    Write-Green "  [OK] OpenClaw"
-} else {
-    Write-Red "  [FAIL] OpenClaw"
-}
-
-if (Test-Path "$CORE_DIR\node_modules\@sliverp\qqbot") {
-    Write-Green "  [OK] QQ plugin"
-} else {
-    Write-Yellow "  [WARN] QQ plugin (not required)"
-}
-
-$installedSkills = (Get-ChildItem -Directory $SKILLS_TARGET -ErrorAction SilentlyContinue).Count
-Write-Green "  [OK] China skills ($installedSkills)"
-
-if (Test-Path $CONFIG_PATH) {
-    Write-Green "  [OK] Config file"
-} else {
-    Write-Yellow "  [WARN] Config (configure after first start)"
-}
-
 Write-Host ""
 
 # ============================================================

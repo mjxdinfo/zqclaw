@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# ZqClaw 一键安装脚本 (Mac/Linux) - 优化版
+# ZqClaw 一键安装脚本 (Mac/Linux)
 # 用法: curl -fsSL https://zqclaw.itmsky.com/install.sh | bash
 #       或: bash install.sh
 # ============================================================
@@ -284,7 +284,7 @@ PKGJSON
 }
 
 # ============================================================
-# 配置全局命令（核心修复）
+# 配置全局命令
 # ============================================================
 setup_global_command() {
     if is_done "global_cmd"; then
@@ -309,7 +309,7 @@ export PATH=\"$(dirname "$node_bin"):\$PATH\"
 exec $node_bin $openclaw_mjs \"\$@\""
     
     # 尝试多个位置
-    for path in /usr/local/bin/openclaw "$HOME/bin/openclaw" "$ZQCLAW_DIR/openclaw"; do
+    for path in /usr/local/bin/zqclaw "$HOME/bin/zqclaw" "$ZQCLAW_DIR/zqclaw"; do
         local dir=$(dirname "$path")
         if [ -w "$dir" ] || mkdir -p "$dir" 2>/dev/null; then
             echo "$wrapper_content" > "$path"
@@ -392,7 +392,7 @@ metadata: { "openclaw": { "emoji": "📺" } }
 SKILLEOF
     fi
     
-    # 添加更多技能...
+    # 添加更多技能
     local skills=("aichat-tool" "code-debug" "devops-assistant" "essay-writer" "image-prompt" "ppt-generator" "resume优化师" "seo优化师" "sql-builder" "小红书笔记")
     for skill in "${skills[@]}"; do
         if [ ! -d "$SKILLS_TARGET/$skill" ]; then
@@ -454,7 +454,7 @@ setup_model() {
         # 非交互模式（管道/重定向）直接跳过
         if [ ! -t 0 ]; then
             echo -e "  ${DIM}管道模式，跳过模型配置${NC}"
-            echo -e "  ${DIM}安装后可运行 openclaw setup 配置${NC}"
+            echo -e "  ${DIM}安装后可运行 zqclaw setup 配置${NC}"
             return 0
         fi
         echo -n "  请输入 DeepSeek API Key (留空跳过): "
@@ -473,7 +473,7 @@ CFGJSON
         echo -e "  ${GREEN}✓${NC} 模型配置完成: DeepSeek"
         mark_done "model"
     else
-        echo -e "  ${YELLOW}⚠ 跳过模型配置，可稍后运行 openclaw setup${NC}"
+        echo -e "  ${YELLOW}⚠ 跳过模型配置，可稍后运行 zqclaw setup${NC}"
     fi
 }
 
@@ -493,20 +493,20 @@ verify_installation() {
         echo -e "  ${GREEN}✓${NC} OpenClaw"
     fi
     
-    # 验证 openclaw 命令
-    local openclaw_cmd=""
-    for cmd in /usr/local/bin/openclaw "$HOME/bin/openclaw" "$ZQCLAW_DIR/openclaw" "openclaw"; do
+    # 验证 zqclaw 命令
+    local zqclaw_cmd=""
+    for cmd in /usr/local/bin/zqclaw "$HOME/bin/zqclaw" "$ZQCLAW_DIR/zqclaw" "zqclaw"; do
         if $cmd --version >/dev/null 2>&1; then
-            openclaw_cmd="$cmd"
+            zqclaw_cmd="$cmd"
             break
         fi
     done
     
-    if [ -n "$openclaw_cmd" ]; then
-        local oc_ver=$($openclaw_cmd --version 2>/dev/null || echo "未知")
-        echo -e "  ${GREEN}✓${NC} openclaw 命令 ($oc_ver)"
+    if [ -n "$zqclaw_cmd" ]; then
+        local oc_ver=$($zqclaw_cmd --version 2>/dev/null || echo "未知")
+        echo -e "  ${GREEN}✓${NC} zqclaw 命令 ($oc_ver)"
     else
-        echo -e "  ${YELLOW}⚠ openclaw 命令未找到，请检查 PATH${NC}"
+        echo -e "  ${YELLOW}⚠ zqclaw 命令未找到，请检查 PATH${NC}"
     fi
     
     local skill_count=$(find "$CORE_DIR/node_modules/openclaw/skills" -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d ' ')
@@ -523,18 +523,18 @@ show_complete() {
     echo ""
     echo -e "${GREEN}"
     echo "  ╔══════════════════════════════════════════╗"
-    echo "  ║  ZqClaw 安装成功！                       ║"
+    echo "  ║  ZqClaw 安装成功！                    ║"
     echo "  ╚══════════════════════════════════════════╝"
     echo -e "${NC}"
     echo "  安装目录: $ZQCLAW_DIR"
     echo "  占用空间: $install_size"
     echo ""
     
-    # 检查 openclaw 命令
-    local openclaw_cmd=""
-    for cmd in /usr/local/bin/openclaw "$HOME/bin/openclaw" "$ZQCLAW_DIR/openclaw"; do
+    # 检查 zqclaw 命令
+    local zqclaw_cmd=""
+    for cmd in /usr/local/bin/zqclaw "$HOME/bin/zqclaw" "$ZQCLAW_DIR/zqclaw"; do
         if $cmd --version >/dev/null 2>&1; then
-            openclaw_cmd="$cmd"
+            zqclaw_cmd="$cmd"
             break
         fi
     done
@@ -546,37 +546,22 @@ show_complete() {
         echo -e "  ${GREEN}✓${NC} 目录统一: ~/.openclaw -> $ZQCLAW_DIR/.openclaw"
     fi
     
-    if [ -n "$openclaw_cmd" ]; then
-        echo "  启动命令: ${CYAN}openclaw gateway run${NC}"
+    if [ -n "$zqclaw_cmd" ]; then
+        echo "  启动命令: ${CYAN}zqclaw gateway run${NC}"
     else
-        echo "  启动命令: ${CYAN}$ZQCLAW_DIR/openclaw gateway run${NC}"
+        echo "  启动命令: ${CYAN}$ZQCLAW_DIR/zqclaw gateway run${NC}"
     fi
     echo ""
     echo "  浏览器会自动打开配置页面"
     echo ""
     
-    # 生成启动脚本（设置正确的环境变量）
-    cat > "$ZQCLAW_DIR/start.sh" << 'STARTEOF'
+    # 生成启动脚本
+    cat > "$ZQCLAW_DIR/start.sh" << 'STARTSHEOF'
 #!/bin/bash
 # ZqClaw 启动脚本
 ZQCLAW_DIR="$HOME/.zqclaw"
 NODE_DIR="node-linux-x64"
-CORE_DIR="$HOME/.zqclaw/core"
 
-# 统一目录结构
-if [ -L "$HOME/.openclaw" ]; then
-    TARGET=$(readlink -f "$HOME/.openclaw")
-    if [ "$TARGET" != "$HOME/.zqclaw/.openclaw" ]; then
-        ln -sf "$HOME/.zqclaw/.openclaw" "$HOME/.openclaw"
-    fi
-fi
-
-# 使用安装目录中的 openclaw
-cd "$CORE_DIR"
-export PATH="$HOME/.zqclaw/runtime/$NODE_DIR/bin:$PATH"
-exec "$HOME/.zqclaw/runtime/$NODE_DIR/bin/node" "$CORE_DIR/node_modules/openclaw/openclaw.mjs" gateway run
-
-#!/bin/bash
 # 统一目录结构
 if [ -L "$HOME/.openclaw" ]; then
     TARGET=$(readlink -f "$HOME/.openclaw")
@@ -585,10 +570,11 @@ if [ -L "$HOME/.openclaw" ]; then
     fi
 fi
 
-# 使用安装目录中的 openclaw
+# 使用安装目录中的 zqclaw
 cd "$ZQCLAW_DIR/core"
 export PATH="$ZQCLAW_DIR/runtime/$NODE_DIR/bin:$PATH"
 exec "$ZQCLAW_DIR/runtime/$NODE_DIR/bin/node" "$CORE_DIR/node_modules/openclaw/openclaw.mjs" gateway run
+STARTSHEOF
     chmod +x "$ZQCLAW_DIR/start.sh"
     echo "  工具脚本: $ZQCLAW_DIR/start.sh"
     
@@ -599,8 +585,8 @@ echo "  将删除: $ZQCLAW_DIR"
 read -p "  确认卸载？(y/n) [n]: " CONFIRM
 if [ "$CONFIRM" = "y" ] || [ "$CONFIRM" = "Y" ]; then
     rm -rf "$ZQCLAW_DIR"
-    rm -f /usr/local/bin/openclaw 2>/dev/null
-    rm -f "$HOME/bin/openclaw" 2>/dev/null
+    rm -f /usr/local/bin/zqclaw 2>/dev/null
+    rm -f "$HOME/bin/zqclaw" 2>/dev/null
     rm -f "$HOME/.openclaw" 2>/dev/null
     echo "  卸载完成"
 fi
@@ -611,8 +597,6 @@ UNINSTALLEOF
     echo ""
     echo -e "${DIM}提示: 如需重新安装，删除 $ZQCLAW_DIR 目录即可${NC}"
 }
-
-
 
 # ============================================================
 # 主流程
